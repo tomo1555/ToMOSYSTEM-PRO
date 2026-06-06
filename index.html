@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Yuji+Syuku&display=swap" rel="stylesheet">
-  <link class="apple-touch-icon" href="https://drive.google.com/uc?export=view&id=1J5l36DsPD_bt_ERmUJ_3JOA8V3y1wVjJ">
+  
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" type="image/png" href="icon.png">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -231,6 +233,13 @@
 </div>
 
 <script>
+  // サービスワーカー（完全オフライン対応）の登録処理
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('ServiceWorker registered successfully.'))
+      .catch(err => console.log('ServiceWorker registration failed:', err));
+  }
+
   var serverOffset = 0, isSynced = false, isLate = true, currentGengo = 'reiwa';
   var masterYear = new Date().getFullYear();
   var hist = JSON.parse(localStorage.getItem("tomo_v195_hist")) || {err:[], calc:[]};
@@ -295,12 +304,11 @@
   function spin(id, v, m){ vibe(); var e = document.getElementById(id); var c = parseInt(e.value)+v; if(id.endsWith('yy')){ if(c>m)c=2020; else if(c<2020)c=m; e.value=c; return; } if(c>m)c=0; else if(c<0)c=m; e.value=pad(c); }
   function toggleArea(id){ vibe(); var e = document.getElementById(id); e.style.display = (e.style.display==="block")?"none":"block"; }
   
-  // 「現在時刻変更」チェック時の動的表示切り替え（チェック時に秒を00に強制セット）
   function toggleStdTimeStepper(checked) {
     var container = document.getElementById("std-time-stepper-container");
     if(checked) {
       container.style.display = "grid"; 
-      document.getElementById("current-s").value = "00"; // チェックが入ったら秒を「00」にリセット
+      document.getElementById("current-s").value = "00"; 
     } else {
       container.style.display = "none"; 
       var n = new Date(Date.now() + serverOffset);
@@ -398,211 +406,4 @@
   }
   function refreshGengoYearDisplay() { var e = document.getElementById("gengo-year"); if(currentGengo==='reiwa') e.value = masterYear - 2018; else if(currentGengo==='heisei') e.value = masterYear - 1988; else if(currentGengo==='showa') e.value = masterYear - 1925; else e.value = masterYear; }
   function spinGengo(v) { vibe(); masterYear += v; if(masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') setGengo('reiwa'); else if(masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') setGengo('heisei'); else if(masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') setGengo('showa'); refreshGengoYearDisplay(); updateToolFromMaster(); }
-  function syncFromGengoInput() { var y = parseInt(document.getElementById("gengo-year").value); if(isNaN(y)) return; masterYear = (currentGengo==='showa')?y+1925:(currentGengo==='heisei')?y+1988:(currentGengo==='reiwa')?y+2018:y; updateToolFromMaster(); }
-  function syncFromCalendar(val) { document.getElementById("birth-date").value = val; var d = new Date(val); masterYear = d.getFullYear(); var g = (masterYear>=2019)?'reiwa':(masterYear>=1989)?'heisei':(masterYear>=1926)?'showa':'seireki'; setGengo(g); updateToolFromMaster(); }
-  
-  function updateToolFromMaster() { 
-    var currentB = document.getElementById("birth-date").value || "1975-01-01"; var newDateStr = masterYear + currentB.substring(4); document.getElementById("birth-date").value = newDateStr; 
-    var b = new Date(newDateStr); var age = new Date().getFullYear() - b.getFullYear(); document.getElementById("res-age").innerText = age + " 歳"; 
-    document.getElementById("res-eto").innerText = ["申","酉","戌","亥","子","丑","寅","卯","辰","巳","午","未"][b.getFullYear()%12] + "年"; 
-    var base = (b.getMonth()<3 || (b.getMonth()===3 && b.getDate()<=1)) ? b.getFullYear() : b.getFullYear()+1; var h = ""; 
-    [{n:"小学校",s:6,e:12},{n:"中学校",s:12,e:15},{n:"高 校",s:15,e:18},{n:"大 学",s:18,e:22}].forEach(x => { h += "<tr><td>"+x.n+"</td><td>"+getGStrCombo(base+x.s)+"</td><td>"+getGStrCombo(base+x.e)+"</td></tr>"; }); 
-    document.getElementById("edu-body").innerHTML = h; 
-  }
-  function getGStrCombo(y){ var gStr = ""; if(y>=2019) gStr = "令和" + (y-2018) + "年"; else if(y>=1989) gStr = "平成" + (y-1988) + "年"; else if(y>=1926) gStr = "昭和" + (y-1925) + "年"; else gStr = y + "年"; return gStr + " (" + y + ")"; }
-
-  function runMeasure(){
-    vibe();
-    var btn = document.getElementById("main-measure-btn");
-    if(btn.disabled) return;
-    btn.disabled = true;
-
-    var n = new Date(Date.now()+serverOffset);
-    if(document.getElementById("toggle-change-std").checked) {
-      n.setHours(
-        parseInt(document.getElementById("current-h").value),
-        parseInt(document.getElementById("current-m").value),
-        parseInt(document.getElementById("current-s").value)
-      );
-    }
-    
-    var t = new Date(n);
-    var hasDateErr = document.getElementById("toggle-date-err").checked;
-    var stdTimeStr = n.getFullYear() + "/" + pad(n.getMonth()+1) + "/" + pad(n.getDate()) + " " + pad(n.getHours()) + ":" + pad(n.getMinutes()) + ":" + pad(n.getSeconds());
-    var camTimeStr = "";
-    
-    var h = parseInt(document.getElementById("e-h").value);
-    var m = parseInt(document.getElementById("e-m").value);
-    var s = parseInt(document.getElementById("e-s").value);
-
-    var yy = n.getFullYear(), mm = n.getMonth(), dd = n.getDate();
-
-    if (hasDateErr) {
-      yy = parseInt(document.getElementById("e-yy").value);
-      mm = parseInt(document.getElementById("e-mm").value) - 1;
-      dd = parseInt(document.getElementById("e-dd").value);
-      t = new Date(yy, mm, dd, h, m, s);
-      camTimeStr = yy + "/" + pad(mm+1) + "/" + pad(dd) + " " + pad(h) + ":" + pad(m) + ":" + pad(s);
-    } else {
-      t.setHours(h, m, s);
-      camTimeStr = n.getFullYear() + "/" + pad(n.getMonth()+1) + "/" + pad(n.getDate()) + " " + pad(t.getHours()) + ":" + pad(t.getMinutes()) + ":" + pad(t.getSeconds());
-    }
-
-    var diff = Math.floor((n-t)/1000); 
-    var st = (diff>=0)?"遅れ":"進み"; 
-    var a = Math.abs(diff);
-    
-    var ddDiff = Math.floor(a/(3600*24));
-    var hhDiff = Math.floor((a%(3600*24))/3600); 
-    var mmDiff = Math.floor((a%3600)/60); 
-    var ssDiff = a%60;
-    
-    var resStr = (ddDiff > 0 ? ddDiff+"日" : "") + hhDiff+"時"+mmDiff+"分"+ssDiff+"秒";
-    
-    document.getElementById("a-yy").value = yy;
-    document.getElementById("a-mm").value = pad(mm + 1);
-    document.getElementById("a-dd").value = pad(dd);
-    document.getElementById("a-h").value = pad(hhDiff); 
-    document.getElementById("a-m").value = pad(mmDiff);
-    document.getElementById("a-s").value = pad(ssDiff);
-    
-    toggleDateStepper('calc', hasDateErr);
-    setLateStatus(diff>=0);
-
-    saveToHist("err", "err", stdTimeStr, camTimeStr, resStr, st, {yy:yy, mm:mm+1, dd:dd, h:hhDiff, m:mmDiff, s:ssDiff, hasDate:hasDateErr});
-
-    scrollToHist();
-    setTimeout(function(){ btn.disabled = false; }, 600);
-  }
-
-  function runCalc(mode){
-    vibe(); 
-    var hasDateCalc = document.getElementById("toggle-date-calc").checked;
-    
-    var base = new Date();
-    var cyy = parseInt(document.getElementById("c-yy").value);
-    var cmm = parseInt(document.getElementById("c-mm").value) - 1;
-    var cdd = parseInt(document.getElementById("c-dd").value);
-    var ch = parseInt(document.getElementById("c-h").value);
-    var cm = parseInt(document.getElementById("c-m").value);
-    var cs = parseInt(document.getElementById("c-s").value);
-    
-    if (hasDateCalc) {
-      base = new Date(cyy, cmm, cdd, ch, cm, cs);
-    } else {
-      base.setHours(ch, cm, cs);
-      cyy = base.getFullYear();
-      cmm = base.getMonth();
-      cdd = base.getDate();
-    }
-
-    var offset = 0;
-    var ah = parseInt(document.getElementById("a-h").value)||0;
-    var am = parseInt(document.getElementById("a-m").value)||0;
-    var as = parseInt(document.getElementById("a-s").value)||0;
-
-    if (hasDateCalc) {
-      var ayy = parseInt(document.getElementById("a-yy").value);
-      var amm = parseInt(document.getElementById("a-mm").value) - 1;
-      var add = parseInt(document.getElementById("a-dd").value);
-      
-      var targetDate = new Date(ayy, amm, add, ah, am, as);
-      var baseDateOnly = new Date(cyy, cmm, cdd, ah, am, as);
-      
-      var dayDiffSeconds = Math.floor((baseDateOnly - targetDate) / 1000);
-      var timeSeconds = (ah * 3600) + (am * 60) + as;
-      offset = Math.abs(dayDiffSeconds * 1000) + (timeSeconds * 1000);
-    } else {
-      offset = ((ah * 3600) + (am * 60) + as) * 1000;
-    }
-    
-    var std, cam; 
-    if(mode === "std"){ 
-      std = new Date(base.getTime() + (isLate ? offset : -offset)); 
-      cam = base; 
-    } else { 
-      std = base;
-      cam = new Date(base.getTime() + (isLate ? -offset : offset));
-    }
-    
-    var stdTimeStr = std.getFullYear() + "/" + pad(std.getMonth()+1) + "/" + pad(std.getDate()) + " " + pad(std.getHours()) + ":" + pad(std.getMinutes()) + ":" + pad(std.getSeconds());
-    var camTimeStr = cam.getFullYear() + "/" + pad(cam.getMonth()+1) + "/" + pad(cam.getDate()) + " " + pad(cam.getHours()) + ":" + pad(cam.getMinutes()) + ":" + pad(cam.getSeconds());
-    
-    var resStr = "";
-    if (hasDateCalc) {
-      resStr = document.getElementById("a-yy").value + "/" + document.getElementById("a-mm").value + "/" + document.getElementById("a-dd").value + " " + ah + "時" + am + "分" + as + "秒";
-    } else {
-      resStr = ah + "時" + am + "分" + as + "秒";
-    }
-    
-    saveToHist("calc", mode, stdTimeStr, camTimeStr, resStr, isLate?"遅れ":"進み", {
-      yy: parseInt(document.getElementById("a-yy").value),
-      mm: parseInt(document.getElementById("a-mm").value),
-      dd: parseInt(document.getElementById("a-dd").value),
-      h: ah, m: am, s: as, hasDate: hasDateCalc
-    });
-    
-    scrollToHist();
-  }
-
-  function saveToHist(m, type, v2Str, v3Str, str, st, raw){
-    var d = {
-      type: type, name: document.getElementById("shared-name").value || (hist[m].length+1),
-      addr: document.getElementById("shared-addr").value, note: document.getElementById("shared-note").value,
-      start: document.getElementById("shared-start-date").value, days: document.getElementById("shared-days").value,
-      v2: v2Str, v3: v3Str, str: str, st: st, raw: raw, ts: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
-    };
-    hist[m].unshift(d); save(); render(m);
-  }
-
-  function render(m){
-    var target = document.getElementById("hist-area-"+m); if(!target) return;
-    var h = "";
-    hist[m].forEach((it, i) => {
-      var col = it.st==="遅れ"?"var(--accent)":"var(--ok)";
-      h += '<div class="hist-item" style="border-left-color:'+col+'">' +
-           '<div class="hist-title-row"><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'name\',this.innerText)">'+it.name+'</span><button class="apply-btn" onclick="applyHist(\''+m+'\','+i+')">反映</button></div>' +
-           '<div style="background:'+col+'26; border:1px solid '+col+'; color:'+col+'; padding:8px; border-radius:8px; text-align:center; font-size:18px; margin-bottom:10px;">設定誤差: '+it.str+' '+it.st+'</div>' +
-           '<div class="hist-data-line '+(it.type==='err'||it.type==='std'?'highlight-blue':'')+'"><span class="label-hist">現在時刻</span><span>'+it.v2+'</span></div>' +
-           '<div class="hist-data-line '+(it.type==='err'||it.type==='cam'?'highlight-yellow':'')+'"><span class="label-hist">カメラ時刻</span><span>'+it.v3+'</span></div>' +
-           '<div class="hist-data-line"><span class="label-hist">住所</span><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'addr\',this.innerText)">'+(it.addr||"-")+'</span></div>' +
-           '<div class="hist-data-line"><span class="label-hist">備考</span><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'note\',this.innerText)">'+(it.note||"-")+'</span></div>' +
-           '<div class="hist-data-line" style="gap:2px;">' +
-             '<span class="save-start-label" style="min-width:55px;">保存<br>開始日</span>' +
-             '<input type="date" value="'+(it.start||"")+'" class="edit-val" style="border:1px solid #334155; min-width:130px; flex:none; padding:2px;" onchange="recalcPeriod(\''+m+'\','+i+',this.value)">' +
-             '<span class="label-hist" style="min-width:60px; margin-left:4px; color:var(--clock); font-size:13px; text-align:right;">保存期間</span>' +
-             '<input type="number" value="'+(it.days||"1")+'" class="edit-val" style="color:var(--clock); width:40px; text-align:right; flex:none;" oninput="updHist(\''+m+'\','+i+',\'days\',this.value)"><span>日</span>' +
-           '</div>' +
-           '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><button style="background:none; border:1px solid var(--accent); color:var(--accent); padding:4px 12px; border-radius:6px; font-size:13px;" onclick="del(\''+m+'\','+i+')">削除</button><span style="color:#475569; font-size:13px;">'+it.ts+'</span></div></div>';
-    });
-    target.innerHTML = h + '<div style="margin-top:20px; display:flex; gap:10px;"><button class="side-btn" style="flex:1;" onclick="exportHist(\''+m+'\')">コピー</button><button class="side-btn" style="flex:1; color:var(--accent);" onclick="resetHist(\''+m+'\')">全消去</button></div>';
-  }
-
-  function keepInputs(){ var d = { name: document.getElementById("shared-name").value, addr: document.getElementById("shared-addr").value, note: document.getElementById("shared-note").value, start: document.getElementById("shared-start-date").value, days: document.getElementById("shared-days").value }; localStorage.setItem("tomo_v195_keep", JSON.stringify(d)); }
-  function loadInputs(){ var d = JSON.parse(localStorage.getItem("tomo_v195_keep")); if(!d) return; document.getElementById("shared-name").value = d.name||""; document.getElementById("shared-addr").value = d.addr||""; document.getElementById("shared-note").value = d.note||""; document.getElementById("shared-start-date").value = d.start||""; document.getElementById("shared-days").value = d.days||"1"; }
-  function recalcPeriod(m, i, sStr){ var s = new Date(sStr); s.setHours(0,0,0,0); var logDate = new Date(hist[m][i].ts.split(' ')[0]); logDate.setHours(0,0,0,0); var diff = Math.floor((logDate-s)/(24*3600*1000)) + 1; hist[m][i].start = sStr; hist[m][i].days = (diff>0)?diff:1; save(); render(m); }
-  function updHist(m,i,k,v){ if(hist[m][i]){ hist[m][i][k]=v; save(); } }
-  function save(){ localStorage.setItem("tomo_v195_hist", JSON.stringify(hist)); }
-  function del(m,i){ if(confirm("消去？")){ hist[m].splice(i,1); save(); render(m); } }
-  function resetHist(m){ if(confirm("全消去？")){ hist[m]=[]; save(); render(m); } }
-  
-  function applyHist(m, i){ 
-    vibe(); var it=hist[m][i]; 
-    document.getElementById("shared-name").value=it.name; document.getElementById("shared-start-date").value=it.start; document.getElementById("shared-days").value=it.days; 
-    lastPeriodVal = parseInt(it.days) || 1;
-    
-    if (it.raw.yy) document.getElementById("a-yy").value = it.raw.yy;
-    if (it.raw.mm) document.getElementById("a-mm").value = pad(it.raw.mm);
-    if (it.raw.dd) document.getElementById("a-dd").value = pad(it.raw.dd);
-    
-    document.getElementById("a-h").value=pad(it.raw.h || 0); 
-    document.getElementById("a-m").value=pad(it.raw.m || 0); 
-    document.getElementById("a-s").value=pad(it.raw.s || 0); 
-    
-    toggleDateStepper('calc', it.raw.hasDate);
-    setLateStatus(it.st === "遅れ"); switchTab('calc'); 
-  }
-  function exportHist(m){ vibe(); var t="【履歴】\n"; hist[m].forEach(it=>t+="\n#"+it.name+"\n誤差:"+it.str+" "+it.st+"\n現在:"+it.v2+"\nカメラ:"+it.v3+"\n---"); var a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); document.body.removeChild(a); alert("コピーしました"); }
-</script>
-</body>
-</html>
+  function syncFromGengoInput() { var y = parseInt(document.getElementById("gengo-year").value); if(isNaN(y)) return; masterYear = (currentGengo==='showa
