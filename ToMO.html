@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ToMO System Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Yuji+Syuku&display=swap" rel="stylesheet">
+  <link class="apple-touch-icon" href="https://drive.google.com/uc?export=view&id=1J5l36DsPD_bt_ERmUJ_3JOA8V3y1wVjJ">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  
+  <style>
+    :root { --primary: #00d2ff; --bg: #0b0f19; --card: #161e2d; --text: #94a3b8; --accent: #ff4b5c; --ok: #00ff88; --clock: #f3ff12; --tool: #ff9ff3; }
+    * { font-family: "Yuji Syuku", serif; font-weight: 900; box-sizing: border-box; }
+    
+    body { margin: 0; background: var(--bg); color: var(--text); overflow-y: auto; line-height: 1.2; padding-top: env(safe-area-inset-top); }
+    .container { padding: 8px; max-width: 600px; margin: auto; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    .title { text-align: center; font-family: "Dancing Script", cursive; font-size: 20px; color: var(--primary); margin: 5px 0; }
+    .clock-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--clock); margin-bottom: 8px; }
+    .tel-btn { background: #ff4b5c; color: #fff; text-decoration: none; padding: 4px 12px; border-radius: 8px; font-size: 14px; }
+    
+    .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+    .tab-btn { flex: 1; padding: 12px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 22px; border-radius: 8px; }
+    .tab-btn.active { color: var(--primary); background: #2d3748; border-color: var(--primary); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+    .tab-tool { flex: 0 0 80px; padding: 12px 0; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 20px; border-radius: 8px; text-align: center; }
+    .tab-tool.active { color: var(--tool); background: #2d3748; border-color: var(--tool); }
+    
+    .card { background: var(--card); border-radius: 12px; padding: 10px; border: 1px solid #2d3748; margin-bottom: 10px; }
+    .name-btn-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .input-label { font-size: 17px; color: var(--primary); white-space: nowrap; min-width: 50px; }
+    
+    .save-start-label { font-size: 12px; line-height: 1.1; color: var(--primary); text-align: center; white-space: nowrap; }
+
+    .input-field { background: #010409; border: 1px solid #334155; border-radius: 8px; color: #fff; padding: 8px; font-size: 17px; flex: 1; min-width: 0; }
+    .side-btn { background: #1e293b; color: var(--text); border: 1px solid #475569; padding: 8px 10px; border-radius: 8px; font-size: 14px; white-space: nowrap; cursor: pointer; flex: none; }
+
+    .stepper-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .stepper { background: #010409; border: 1px solid #334155; border-radius: 8px; text-align: center; position: relative; padding-top: 18px; }
+    .stepper.disabled { opacity: 0.4; pointer-events: none; }
+    .unit-label { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--text); font-family: sans-serif; white-space: nowrap; }
+    .step-btn { background: #1e293b; color: var(--primary); border: none; width: 100%; padding: 4px; font-size: 16px; cursor: pointer; }
+    .step-val-input { background: transparent; border: none; color: #fff; font-size: 24px; text-align: center; width: 100%; outline: none; }
+
+    .main-btn { background: linear-gradient(135deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 22px; cursor: pointer; }
+    .main-btn:disabled { background: #2d3748; color: #4b5563; cursor: not-allowed; }
+    .calc-btn { border: none; padding: 10px; border-radius: 30px; font-size: 16px; width: 100%; cursor: pointer; }
+    
+    .checkbox-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 2px 4px; }
+    .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; margin: 0; }
+    .checkbox-label { font-size: 15px; color: var(--tool); cursor: pointer; white-space: nowrap; }
+
+    .tool-table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #fff; font-size: 13px; }
+    .tool-table th { background: rgba(255, 159, 243, 0.2); border: 1px solid #334155; padding: 6px; color: var(--tool); }
+    .tool-table td { border: 1px solid #334155; padding: 4px; text-align: center; }
+
+    .hist-item { background: #1c2536; border-radius: 12px; padding: 10px; margin-top: 10px; border-left: 6px solid #334155; }
+    .hist-title-row { display: flex; justify-content: space-between; align-items: center; font-size: 19px; color: var(--primary); border-bottom: 1px solid #334155; margin-bottom: 8px; padding-bottom: 4px; }
+    .hist-data-line { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; align-items: center; gap:4px; overflow: hidden; }
+    .edit-val { color: #fff; text-decoration: underline; text-align: left; flex: 1; min-height: 1.2em; border:none; background:transparent; font-size:16px; outline:none; min-width: 0; }
+    .label-hist { min-width: 70px; color: var(--text); font-size: 15px; flex: none; }
+    .apply-btn { background: var(--ok); color: #000; border: none; padding: 4px 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
+
+    .tool-gengo-btn { flex: 1; padding: 10px 0; font-size: 16px !important; border-radius: 8px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; }
+    .tool-gengo-btn.active { color: var(--tool) !important; border-color: var(--tool) !important; background: #2d3748 !important; }
+    .highlight-blue { background: rgba(0,210,255,0.25) !important; color: #fff !important; border: 1px solid var(--primary); }
+    .highlight-yellow { background: rgba(243,255,18,0.25) !important; color: #fff !important; border: 1px solid var(--clock); }
+
+    .tool-input-grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; }
+    .tool-right-col { display: flex; flex-direction: column; gap: 6px; }
+    .tool-row-item { display: flex; align-items: center; justify-content: center; height: 38px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="title">ToMO System Pro</div>
+  
+  <div class="clock-row">
+    <div id="live-info" style="color:var(--clock); font-family:monospace; font-size:15px;">同期中...</div>
+    <a href="tel:117" class="tel-btn" onclick="vibe()">117接続</a>
+  </div>
+  
+  <div class="tabs">
+    <button id="t-err" class="tab-btn active" onclick="switchTab('err')">誤差</button>
+    <button id="t-calc" class="tab-btn" onclick="switchTab('calc')">計算</button>
+    <button id="t-tool" class="tab-tool" onclick="switchTab('tool')">道具</button>
+  </div>
+
+  <div class="card">
+    <div id="common-inputs">
+      <div class="name-btn-row">
+        <span class="input-label">名称</span>
+        <input type="text" id="shared-name" class="input-field" placeholder="現場名など" oninput="keepInputs()">
+        <button class="side-btn" onclick="toggleArea('detail-inputs')">詳細入力</button>
+      </div>
+      <div id="detail-inputs" style="display:none; margin-bottom:8px;">
+        <div class="name-btn-row"><span class="input-label">住所</span><input type="text" id="shared-addr" class="input-field" oninput="keepInputs()"></div>
+        <div class="name-btn-row"><span class="input-label">備考</span><input type="text" id="shared-note" class="input-field" oninput="keepInputs()"></div>
+      </div>
+      
+      <div class="name-btn-row" style="gap: 4px;">
+        <span class="save-start-label" style="width:50px;">保存<br>開始日</span>
+        <input type="date" id="shared-start-date" class="input-field" style="padding:6px; font-size:15px;" onchange="syncDaysFromCalendar(this.value); keepInputs();">
+        
+        <span class="save-start-label" style="width:50px; margin-left:auto;">保存<br>期間</span>
+        <input type="number" id="shared-days" class="input-field" style="max-width:65px; text-align:center; color:var(--clock); font-size:19px; padding:5px;" value="1" min="1" oninput="handlePeriodInput(this.value); keepInputs();">
+        <span style="font-size:15px; flex:none;">日</span>
+      </div>
+    </div>
+
+    <div id="view-err">
+      
+      <div id="std-time-stepper-container" class="stepper-grid" style="margin-top: 10px; margin-bottom: 8px; display: none;">
+        <div id="box-current-h" class="stepper"><span class="unit-label">基準時</span><button class="step-btn" onclick="spin('current-h',1,23)">▲</button><input type="number" id="current-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-h',-1,23)">▼</button></div>
+        <div id="box-current-m" class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('current-m',1,59)">▲</button><input type="number" id="current-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-m',-1,59)">▼</button></div>
+        <div id="box-current-s" class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('current-s',1,59)">▲</button><input type="number" id="current-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-s',-1,59)">▼</button></div>
+      </div>
+
+      <div class="checkbox-row" style="margin-bottom: 12px; justify-content: space-between; border-bottom: 1px dashed #334155; padding-bottom: 8px;">
+        <div>
+          <input type="checkbox" id="toggle-change-std" onchange="toggleStdTimeStepper(this.checked); vibe();">
+          <label for="toggle-change-std" class="checkbox-label" style="margin-right: 12px;">現在時刻変更</label>
+        </div>
+        <div>
+          <input type="checkbox" id="toggle-date-err" onchange="toggleDateStepper('err', this.checked); vibe();">
+          <label for="toggle-date-err" class="checkbox-label">日付ずれ</label>
+        </div>
+      </div>
+
+      <div id="date-stepper-area-err" class="stepper-grid" style="display: none;">
+        <div class="stepper"><span class="unit-label">カメラ年</span><button class="step-btn" onclick="spin('e-yy',1,2100)">▲</button><input type="number" id="e-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('e-yy',-1,2020)">▼</button></div>
+        <div class="stepper"><span class="unit-label">月</span><button class="step-btn" onclick="spin('e-mm',1,12)">▲</button><input type="number" id="e-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('e-mm',-1,12)">▼</button></div>
+        <div class="stepper"><span class="unit-label">日</span><button class="step-btn" onclick="spin('e-dd',1,31)">▲</button><input type="number" id="e-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('e-dd',-1,31)">▼</button></div>
+      </div>
+
+      <div class="stepper-grid">
+        <div class="stepper"><span class="unit-label">カメラ時</span><button class="step-btn" onclick="spin('e-h',1,23)">▲</button><input type="number" id="e-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-h',-1,23)">▼</button></div>
+        <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('e-m',1,59)">▲</button><input type="number" id="e-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-m',-1,59)">▼</button></div>
+        <div class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('e-s',1,59)">▲</button><input type="number" id="e-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-s',-1,59)">▼</button></div>
+      </div>
+
+      <button id="main-measure-btn" class="main-btn" onclick="runMeasure()">誤 差</button>
+    </div>
+
+    <div id="view-calc" hidden>
+      
+      <div class="name-btn-row" style="justify-content: space-between; margin-bottom: 6px;">
+        <span class="input-label" style="font-size: 23px; font-weight: bold; padding-left: 2px;">誤差</span>
+        <button id="c-state-toggle" style="padding: 6px 20px; border-radius: 10px; border: 2px solid var(--accent); background: rgba(255,75,92,0.1); color: var(--accent); font-size: 18px;" onclick="toggleState()">遅れ</button>
+      </div>
+
+      <div id="calc-err-date-container" class="stepper-grid" style="display: none; margin-bottom: 8px;">
+        <div class="stepper"><span class="unit-label">誤差年</span><button class="step-btn" onclick="spin('a-yy',1,2100)">▲</button><input type="number" id="a-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('a-yy',-1,2020)">▼</button></div>
+        <div class="stepper"><span class="unit-label">誤差月</span><button class="step-btn" onclick="spin('a-mm',1,12)">▲</button><input type="number" id="a-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('a-mm',-1,12)">▼</button></div>
+        <div class="stepper"><span class="unit-label">誤差日</span><button class="step-btn" onclick="spin('a-dd',1,31)">▲</button><input type="number" id="a-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('a-dd',-1,31)">▼</button></div>
+      </div>
+
+      <div class="stepper-grid">
+        <div class="stepper"><span class="unit-label">時</span><button class="step-btn" onclick="spin('a-h',1,23)">▲</button><input type="number" id="a-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('a-h',-1,23)">▼</button></div>
+        <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('a-m',1,59)">▲</button><input type="number" id="a-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('a-m',-1,59)">▼</button></div>
+        <div class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('a-s',1,59)">▲</button><input type="number" id="a-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('a-s',-1,59)">▼</button></div>
+      </div>
+
+      <div class="checkbox-row" style="margin-top: 10px; margin-bottom: 12px;">
+        <input type="checkbox" id="toggle-date-calc" onchange="toggleDateStepper('calc', this.checked); vibe();">
+        <label for="toggle-date-calc" class="checkbox-label">日付ずれ（計算基準の年月日）</label>
+      </div>
+
+      <div id="date-stepper-area-calc" class="stepper-grid" style="display: none;">
+        <div class="stepper"><span class="unit-label">基準年</span><button class="step-btn" onclick="spin('c-yy',1,2100)">▲</button><input type="number" id="c-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('c-yy',-1,2020)">▼</button></div>
+        <div class="stepper"><span class="unit-label">基準月</span><button class="step-btn" onclick="spin('c-mm',1,12)">▲</button><input type="number" id="c-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('c-mm',-1,12)">▼</button></div>
+        <div class="stepper"><span class="unit-label">基準日</span><button class="step-btn" onclick="spin('c-dd',1,31)">▲</button><input type="number" id="c-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('c-dd',-1,31)">▼</button></div>
+      </div>
+
+      <div class="stepper-grid">
+        <div class="stepper"><span class="unit-label">時</span><button class="step-btn" onclick="spin('c-h',1,23)">▲</button><input type="number" id="c-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('c-h',-1,23)">▼</button></div>
+        <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('c-m',1,59)">▲</button><input type="number" id="c-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('c-m',-1,59)">▼</button></div>
+        <div class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('c-s',1,59)">▲</button><input type="number" id="c-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('c-s',-1,59)">▼</button></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+        <button id="calc-std-btn" class="calc-btn" style="background:linear-gradient(135deg,#00d2ff,#3a7bd5); color:#fff;" onclick="runCalc('std')">現在時刻を知る</button>
+        <button id="calc-cam-btn" class="calc-btn" style="background:linear-gradient(135deg,#f3ff12,#ffcc00); color:#000;" onclick="runCalc('cam')">カメラ時刻を知る</button>
+      </div>
+    </div>
+
+    <div id="view-tool" hidden>
+      <div class="tabs" style="margin-bottom: 12px;">
+        <button id="btn-sw" class="tool-gengo-btn" onclick="setGengo('showa')">昭和</button>
+        <button id="btn-h" class="tool-gengo-btn" onclick="setGengo('heisei')">平成</button>
+        <button id="btn-r" class="tool-gengo-btn active" onclick="setGengo('reiwa')">令和</button>
+        <button id="btn-s" class="tool-gengo-btn" onclick="setGengo('seireki')">西暦</button>
+      </div>
+      <div class="card" style="background:rgba(255,159,243,0.05); border:1px solid var(--tool); padding:10px;">
+        <div class="tool-input-grid">
+          <div class="stepper" style="padding-top:15px; height: 100%;">
+            <span id="gengo-label" class="unit-label">令和</span>
+            <button class="step-btn" onclick="spinGengo(1)">▲</button>
+            <input type="number" id="gengo-year" class="step-val-input" value="1" oninput="syncFromGengoInput()">
+            <button class="step-btn" onclick="spinGengo(-1)">▼</button>
+          </div>
+          <div class="tool-right-col">
+            <div class="tool-row-item">
+              <span class="input-label" style="color:var(--tool); font-size:18px;">生年月日</span>
+            </div>
+            <div class="tool-row-item">
+              <input type="date" id="birth-date" class="input-field" style="border-color:var(--tool); padding:4px 8px; width: 100%;" onchange="syncFromCalendar(this.value)">
+            </div>
+            <div class="tool-row-item" style="background:rgba(255,159,243,0.1); border-radius:8px; border:1px solid var(--tool);">
+              <span id="res-age" style="font-size:18px; color:#fff;">-- 歳</span>
+              <span style="margin: 0 8px; color:var(--tool);">/</span>
+              <span id="res-eto" style="font-size:18px; color:var(--tool);">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <table class="tool-table">
+        <thead><tr><th>学校</th><th>入学</th><th>卒業</th></tr></thead>
+        <tbody id="edu-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="hist-anchor"></div>
+  <div id="hist-group">
+    <div id="hist-area-err"></div>
+    <div id="hist-area-calc" hidden></div>
+  </div>
+</div>
+
+<script>
+  var serverOffset = 0, isSynced = false, isLate = true, currentGengo = 'reiwa';
+  var masterYear = new Date().getFullYear();
+  var hist = JSON.parse(localStorage.getItem("tomo_v195_hist")) || {err:[], calc:[]};
+  var lastPeriodVal = 1;
+
+  window.onload = function(){ 
+    syncTime(); setInterval(upd, 1000); initTime();
+    
+    var n = new Date();
+    var todayStr = n.getFullYear() + "-" + pad(n.getMonth()+1) + "-" + pad(n.getDate());
+    document.getElementById("shared-start-date").value = todayStr;
+    
+    var initBirth = "1975-" + pad(n.getMonth()+1) + "-" + pad(n.getDate());
+    syncFromCalendar(initBirth);
+    loadInputs();
+    
+    if(!localStorage.getItem("tomo_v195_keep")){
+      document.getElementById("shared-start-date").value = todayStr;
+      document.getElementById("shared-days").value = "1";
+    }
+    lastPeriodVal = parseInt(document.getElementById("shared-days").value) || 1;
+    
+    render("err"); render("calc");
+  };
+
+  function initTime(){ 
+    var n = new Date(); 
+    document.getElementById("e-h").value=pad(n.getHours()); document.getElementById("e-m").value=pad(n.getMinutes()); document.getElementById("e-s").value="00";
+    document.getElementById("c-h").value=pad(n.getHours()); document.getElementById("c-m").value=pad(n.getMinutes()); document.getElementById("c-s").value="00";
+    document.getElementById("a-h").value="00"; document.getElementById("a-m").value="00"; document.getElementById("a-s").value="00";
+    
+    document.getElementById("current-h").value=pad(n.getHours()); document.getElementById("current-m").value=pad(n.getMinutes()); document.getElementById("current-s").value=pad(n.getSeconds());
+    
+    document.getElementById("e-yy").value=n.getFullYear(); document.getElementById("e-mm").value=pad(n.getMonth()+1); document.getElementById("e-dd").value=pad(n.getDate());
+    document.getElementById("c-yy").value=n.getFullYear(); document.getElementById("c-mm").value=pad(n.getMonth()+1); document.getElementById("c-dd").value=pad(n.getDate());
+    document.getElementById("a-yy").value=n.getFullYear(); document.getElementById("a-mm").value=pad(n.getMonth()+1); document.getElementById("a-dd").value=pad(n.getDate());
+  }
+
+  function syncTime(){ 
+    if(typeof google !== 'undefined') { 
+      var completed = false;
+      var timeoutId = setTimeout(function(){ if(!completed) { completed = true; isSynced = true; } }, 1000);
+      google.script.run.withSuccessHandler(function(ms){ if(!completed) { completed = true; clearTimeout(timeoutId); serverOffset = ms - Date.now(); isSynced = true; } })
+      .withFailureHandler(function(){ if(!completed) { completed = true; clearTimeout(timeoutId); isSynced = true; } }).getServerTime(); 
+    } else { isSynced = true; } 
+  }
+  
+  function upd(){ 
+    if(!isSynced) return; 
+    var n = new Date(Date.now() + serverOffset); 
+    document.getElementById("live-info").innerText = "令和" + (n.getFullYear()-2018) + "年" + (n.getMonth()+1) + "月" + n.getDate() + "日 " + pad(n.getHours()) + ":" + pad(n.getMinutes()) + ":" + pad(n.getSeconds()); 
+    
+    if(!document.getElementById("toggle-change-std").checked){
+      document.getElementById("current-h").value = pad(n.getHours());
+      document.getElementById("current-m").value = pad(n.getMinutes());
+      document.getElementById("current-s").value = pad(n.getSeconds());
+    }
+  }
+  
+  function pad(n){ return ("0"+n).slice(-2); }
+  function vibe(){ if(navigator.vibrate) navigator.vibrate(40); }
+  function spin(id, v, m){ vibe(); var e = document.getElementById(id); var c = parseInt(e.value)+v; if(id.endsWith('yy')){ if(c>m)c=2020; else if(c<2020)c=m; e.value=c; return; } if(c>m)c=0; else if(c<0)c=m; e.value=pad(c); }
+  function toggleArea(id){ vibe(); var e = document.getElementById(id); e.style.display = (e.style.display==="block")?"none":"block"; }
+  
+  // 「現在時刻変更」チェック時の動的表示切り替え（チェック時に秒を00に強制セット）
+  function toggleStdTimeStepper(checked) {
+    var container = document.getElementById("std-time-stepper-container");
+    if(checked) {
+      container.style.display = "grid"; 
+      document.getElementById("current-s").value = "00"; // チェックが入ったら秒を「00」にリセット
+    } else {
+      container.style.display = "none"; 
+      var n = new Date(Date.now() + serverOffset);
+      document.getElementById("current-h").value = pad(n.getHours());
+      document.getElementById("current-m").value = pad(n.getMinutes());
+      document.getElementById("current-s").value = pad(n.getSeconds());
+    }
+  }
+
+  function toggleDateStepper(tab, checked) {
+    document.getElementById("date-stepper-area-" + tab).style.display = checked ? "grid" : "none";
+    if (tab === 'err') {
+      document.getElementById("toggle-date-err").checked = checked;
+    } else if (tab === 'calc') {
+      document.getElementById("toggle-date-calc").checked = checked;
+      document.getElementById("calc-err-date-container").style.display = checked ? "grid" : "none";
+    }
+  }
+
+  function handlePeriodInput(val) {
+    var nextDays = parseInt(val);
+    if (isNaN(nextDays) || nextDays < 1) {
+      document.getElementById("shared-days").value = 1;
+      nextDays = 1;
+    }
+    var diffDays = nextDays - lastPeriodVal; 
+    if (diffDays !== 0) {
+      var dateInput = document.getElementById("shared-start-date");
+      var d = new Date(dateInput.value);
+      if (!isNaN(d.getTime())) {
+        d.setDate(d.getDate() - diffDays); 
+        dateInput.value = d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+      }
+    }
+    lastPeriodVal = nextDays;
+  }
+
+  function syncDaysFromCalendar(sStr){
+    var s = new Date(sStr); s.setHours(0,0,0,0);
+    var t = new Date(); t.setHours(0,0,0,0);
+    var diff = Math.floor((t-s)/(24*3600*1000)) + 1;
+    var finalDays = (diff>0) ? diff : 1;
+    document.getElementById("shared-days").value = finalDays;
+    lastPeriodVal = finalDays;
+  }
+
+  function scrollToHist(){
+    setTimeout(function(){
+      document.getElementById("hist-anchor").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  }
+
+  function setLateStatus(status) {
+    isLate = status;
+    var b = document.getElementById("c-state-toggle");
+    if(b){
+      b.innerText = isLate ? "遅れ" : "進み";
+      b.style.color = isLate ? "var(--accent)" : "var(--ok)";
+      b.style.borderColor = isLate ? "var(--accent)" : "var(--ok)";
+      b.style.background = isLate ? "rgba(255,75,92,0.1)" : "rgba(0,255,136,0.1)";
+    }
+  }
+
+  function toggleState(){ vibe(); setLateStatus(!isLate); }
+
+  function switchTab(t){ 
+    vibe(); 
+    document.getElementById("view-err").hidden=(t!=="err"); document.getElementById("view-calc").hidden=(t!=="calc"); document.getElementById("view-tool").hidden=(t!=="tool"); 
+    document.getElementById("common-inputs").hidden=(t==="tool"); document.getElementById("hist-group").hidden=(t==="tool"); 
+    document.getElementById("hist-area-err").hidden=(t!=="err"); document.getElementById("hist-area-calc").hidden=(t!=="calc"); 
+    document.getElementById("t-err").classList.toggle("active",t==="err"); document.getElementById("t-calc").classList.toggle("active",t==="calc"); document.getElementById("t-tool").classList.toggle("active",t==="tool");
+
+    if(t === 'calc') {
+      var n = new Date(Date.now() + serverOffset);
+      document.getElementById("c-h").value = pad(n.getHours());
+      document.getElementById("c-m").value = pad(n.getMinutes());
+      document.getElementById("c-s").value = "00";
+      
+      if(!document.getElementById("toggle-date-calc").checked) {
+        document.getElementById("c-yy").value = n.getFullYear();
+        document.getElementById("c-mm").value = pad(n.getMonth()+1);
+        document.getElementById("c-dd").value = pad(n.getDate());
+      }
+    }
+  }
+
+  function setGengo(g) { 
+    vibe(); currentGengo = g; 
+    ['sw','h','r','s'].forEach(id => document.getElementById('btn-'+id).classList.remove('active')); 
+    document.getElementById('btn-'+(g==='showa'?'sw':g==='heisei'?'h':g==='reiwa'?'r':'s')).classList.add('active'); 
+    document.getElementById('gengo-label').innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[g];
+    var testYear = 0; if(g==='reiwa') testYear = masterYear - 2018; else if(g==='heisei') testYear = masterYear - 1988; else if(g==='showa') testYear = masterYear - 1925; else testYear = masterYear;
+    if(testYear <= 0 && g !== 'seireki') { masterYear = (g==='reiwa')?2019:(g==='heisei')?1989:1926; }
+    refreshGengoYearDisplay(); updateToolFromMaster();
+  }
+  function refreshGengoYearDisplay() { var e = document.getElementById("gengo-year"); if(currentGengo==='reiwa') e.value = masterYear - 2018; else if(currentGengo==='heisei') e.value = masterYear - 1988; else if(currentGengo==='showa') e.value = masterYear - 1925; else e.value = masterYear; }
+  function spinGengo(v) { vibe(); masterYear += v; if(masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') setGengo('reiwa'); else if(masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') setGengo('heisei'); else if(masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') setGengo('showa'); refreshGengoYearDisplay(); updateToolFromMaster(); }
+  function syncFromGengoInput() { var y = parseInt(document.getElementById("gengo-year").value); if(isNaN(y)) return; masterYear = (currentGengo==='showa')?y+1925:(currentGengo==='heisei')?y+1988:(currentGengo==='reiwa')?y+2018:y; updateToolFromMaster(); }
+  function syncFromCalendar(val) { document.getElementById("birth-date").value = val; var d = new Date(val); masterYear = d.getFullYear(); var g = (masterYear>=2019)?'reiwa':(masterYear>=1989)?'heisei':(masterYear>=1926)?'showa':'seireki'; setGengo(g); updateToolFromMaster(); }
+  
+  function updateToolFromMaster() { 
+    var currentB = document.getElementById("birth-date").value || "1975-01-01"; var newDateStr = masterYear + currentB.substring(4); document.getElementById("birth-date").value = newDateStr; 
+    var b = new Date(newDateStr); var age = new Date().getFullYear() - b.getFullYear(); document.getElementById("res-age").innerText = age + " 歳"; 
+    document.getElementById("res-eto").innerText = ["申","酉","戌","亥","子","丑","寅","卯","辰","巳","午","未"][b.getFullYear()%12] + "年"; 
+    var base = (b.getMonth()<3 || (b.getMonth()===3 && b.getDate()<=1)) ? b.getFullYear() : b.getFullYear()+1; var h = ""; 
+    [{n:"小学校",s:6,e:12},{n:"中学校",s:12,e:15},{n:"高 校",s:15,e:18},{n:"大 学",s:18,e:22}].forEach(x => { h += "<tr><td>"+x.n+"</td><td>"+getGStrCombo(base+x.s)+"</td><td>"+getGStrCombo(base+x.e)+"</td></tr>"; }); 
+    document.getElementById("edu-body").innerHTML = h; 
+  }
+  function getGStrCombo(y){ var gStr = ""; if(y>=2019) gStr = "令和" + (y-2018) + "年"; else if(y>=1989) gStr = "平成" + (y-1988) + "年"; else if(y>=1926) gStr = "昭和" + (y-1925) + "年"; else gStr = y + "年"; return gStr + " (" + y + ")"; }
+
+  function runMeasure(){
+    vibe();
+    var btn = document.getElementById("main-measure-btn");
+    if(btn.disabled) return;
+    btn.disabled = true;
+
+    var n = new Date(Date.now()+serverOffset);
+    if(document.getElementById("toggle-change-std").checked) {
+      n.setHours(
+        parseInt(document.getElementById("current-h").value),
+        parseInt(document.getElementById("current-m").value),
+        parseInt(document.getElementById("current-s").value)
+      );
+    }
+    
+    var t = new Date(n);
+    var hasDateErr = document.getElementById("toggle-date-err").checked;
+    var stdTimeStr = n.getFullYear() + "/" + pad(n.getMonth()+1) + "/" + pad(n.getDate()) + " " + pad(n.getHours()) + ":" + pad(n.getMinutes()) + ":" + pad(n.getSeconds());
+    var camTimeStr = "";
+    
+    var h = parseInt(document.getElementById("e-h").value);
+    var m = parseInt(document.getElementById("e-m").value);
+    var s = parseInt(document.getElementById("e-s").value);
+
+    var yy = n.getFullYear(), mm = n.getMonth(), dd = n.getDate();
+
+    if (hasDateErr) {
+      yy = parseInt(document.getElementById("e-yy").value);
+      mm = parseInt(document.getElementById("e-mm").value) - 1;
+      dd = parseInt(document.getElementById("e-dd").value);
+      t = new Date(yy, mm, dd, h, m, s);
+      camTimeStr = yy + "/" + pad(mm+1) + "/" + pad(dd) + " " + pad(h) + ":" + pad(m) + ":" + pad(s);
+    } else {
+      t.setHours(h, m, s);
+      camTimeStr = n.getFullYear() + "/" + pad(n.getMonth()+1) + "/" + pad(n.getDate()) + " " + pad(t.getHours()) + ":" + pad(t.getMinutes()) + ":" + pad(t.getSeconds());
+    }
+
+    var diff = Math.floor((n-t)/1000); 
+    var st = (diff>=0)?"遅れ":"進み"; 
+    var a = Math.abs(diff);
+    
+    var ddDiff = Math.floor(a/(3600*24));
+    var hhDiff = Math.floor((a%(3600*24))/3600); 
+    var mmDiff = Math.floor((a%3600)/60); 
+    var ssDiff = a%60;
+    
+    var resStr = (ddDiff > 0 ? ddDiff+"日" : "") + hhDiff+"時"+mmDiff+"分"+ssDiff+"秒";
+    
+    document.getElementById("a-yy").value = yy;
+    document.getElementById("a-mm").value = pad(mm + 1);
+    document.getElementById("a-dd").value = pad(dd);
+    document.getElementById("a-h").value = pad(hhDiff); 
+    document.getElementById("a-m").value = pad(mmDiff);
+    document.getElementById("a-s").value = pad(ssDiff);
+    
+    toggleDateStepper('calc', hasDateErr);
+    setLateStatus(diff>=0);
+
+    saveToHist("err", "err", stdTimeStr, camTimeStr, resStr, st, {yy:yy, mm:mm+1, dd:dd, h:hhDiff, m:mmDiff, s:ssDiff, hasDate:hasDateErr});
+
+    scrollToHist();
+    setTimeout(function(){ btn.disabled = false; }, 600);
+  }
+
+  function runCalc(mode){
+    vibe(); 
+    var hasDateCalc = document.getElementById("toggle-date-calc").checked;
+    
+    var base = new Date();
+    var cyy = parseInt(document.getElementById("c-yy").value);
+    var cmm = parseInt(document.getElementById("c-mm").value) - 1;
+    var cdd = parseInt(document.getElementById("c-dd").value);
+    var ch = parseInt(document.getElementById("c-h").value);
+    var cm = parseInt(document.getElementById("c-m").value);
+    var cs = parseInt(document.getElementById("c-s").value);
+    
+    if (hasDateCalc) {
+      base = new Date(cyy, cmm, cdd, ch, cm, cs);
+    } else {
+      base.setHours(ch, cm, cs);
+      cyy = base.getFullYear();
+      cmm = base.getMonth();
+      cdd = base.getDate();
+    }
+
+    var offset = 0;
+    var ah = parseInt(document.getElementById("a-h").value)||0;
+    var am = parseInt(document.getElementById("a-m").value)||0;
+    var as = parseInt(document.getElementById("a-s").value)||0;
+
+    if (hasDateCalc) {
+      var ayy = parseInt(document.getElementById("a-yy").value);
+      var amm = parseInt(document.getElementById("a-mm").value) - 1;
+      var add = parseInt(document.getElementById("a-dd").value);
+      
+      var targetDate = new Date(ayy, amm, add, ah, am, as);
+      var baseDateOnly = new Date(cyy, cmm, cdd, ah, am, as);
+      
+      var dayDiffSeconds = Math.floor((baseDateOnly - targetDate) / 1000);
+      var timeSeconds = (ah * 3600) + (am * 60) + as;
+      offset = Math.abs(dayDiffSeconds * 1000) + (timeSeconds * 1000);
+    } else {
+      offset = ((ah * 3600) + (am * 60) + as) * 1000;
+    }
+    
+    var std, cam; 
+    if(mode === "std"){ 
+      std = new Date(base.getTime() + (isLate ? offset : -offset)); 
+      cam = base; 
+    } else { 
+      std = base;
+      cam = new Date(base.getTime() + (isLate ? -offset : offset));
+    }
+    
+    var stdTimeStr = std.getFullYear() + "/" + pad(std.getMonth()+1) + "/" + pad(std.getDate()) + " " + pad(std.getHours()) + ":" + pad(std.getMinutes()) + ":" + pad(std.getSeconds());
+    var camTimeStr = cam.getFullYear() + "/" + pad(cam.getMonth()+1) + "/" + pad(cam.getDate()) + " " + pad(cam.getHours()) + ":" + pad(cam.getMinutes()) + ":" + pad(cam.getSeconds());
+    
+    var resStr = "";
+    if (hasDateCalc) {
+      resStr = document.getElementById("a-yy").value + "/" + document.getElementById("a-mm").value + "/" + document.getElementById("a-dd").value + " " + ah + "時" + am + "分" + as + "秒";
+    } else {
+      resStr = ah + "時" + am + "分" + as + "秒";
+    }
+    
+    saveToHist("calc", mode, stdTimeStr, camTimeStr, resStr, isLate?"遅れ":"進み", {
+      yy: parseInt(document.getElementById("a-yy").value),
+      mm: parseInt(document.getElementById("a-mm").value),
+      dd: parseInt(document.getElementById("a-dd").value),
+      h: ah, m: am, s: as, hasDate: hasDateCalc
+    });
+    
+    scrollToHist();
+  }
+
+  function saveToHist(m, type, v2Str, v3Str, str, st, raw){
+    var d = {
+      type: type, name: document.getElementById("shared-name").value || (hist[m].length+1),
+      addr: document.getElementById("shared-addr").value, note: document.getElementById("shared-note").value,
+      start: document.getElementById("shared-start-date").value, days: document.getElementById("shared-days").value,
+      v2: v2Str, v3: v3Str, str: str, st: st, raw: raw, ts: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
+    };
+    hist[m].unshift(d); save(); render(m);
+  }
+
+  function render(m){
+    var target = document.getElementById("hist-area-"+m); if(!target) return;
+    var h = "";
+    hist[m].forEach((it, i) => {
+      var col = it.st==="遅れ"?"var(--accent)":"var(--ok)";
+      h += '<div class="hist-item" style="border-left-color:'+col+'">' +
+           '<div class="hist-title-row"><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'name\',this.innerText)">'+it.name+'</span><button class="apply-btn" onclick="applyHist(\''+m+'\','+i+')">反映</button></div>' +
+           '<div style="background:'+col+'26; border:1px solid '+col+'; color:'+col+'; padding:8px; border-radius:8px; text-align:center; font-size:18px; margin-bottom:10px;">設定誤差: '+it.str+' '+it.st+'</div>' +
+           '<div class="hist-data-line '+(it.type==='err'||it.type==='std'?'highlight-blue':'')+'"><span class="label-hist">現在時刻</span><span>'+it.v2+'</span></div>' +
+           '<div class="hist-data-line '+(it.type==='err'||it.type==='cam'?'highlight-yellow':'')+'"><span class="label-hist">カメラ時刻</span><span>'+it.v3+'</span></div>' +
+           '<div class="hist-data-line"><span class="label-hist">住所</span><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'addr\',this.innerText)">'+(it.addr||"-")+'</span></div>' +
+           '<div class="hist-data-line"><span class="label-hist">備考</span><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'note\',this.innerText)">'+(it.note||"-")+'</span></div>' +
+           '<div class="hist-data-line" style="gap:2px;">' +
+             '<span class="save-start-label" style="min-width:55px;">保存<br>開始日</span>' +
+             '<input type="date" value="'+(it.start||"")+'" class="edit-val" style="border:1px solid #334155; min-width:130px; flex:none; padding:2px;" onchange="recalcPeriod(\''+m+'\','+i+',this.value)">' +
+             '<span class="label-hist" style="min-width:60px; margin-left:4px; color:var(--clock); font-size:13px; text-align:right;">保存期間</span>' +
+             '<input type="number" value="'+(it.days||"1")+'" class="edit-val" style="color:var(--clock); width:40px; text-align:right; flex:none;" oninput="updHist(\''+m+'\','+i+',\'days\',this.value)"><span>日</span>' +
+           '</div>' +
+           '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><button style="background:none; border:1px solid var(--accent); color:var(--accent); padding:4px 12px; border-radius:6px; font-size:13px;" onclick="del(\''+m+'\','+i+')">削除</button><span style="color:#475569; font-size:13px;">'+it.ts+'</span></div></div>';
+    });
+    target.innerHTML = h + '<div style="margin-top:20px; display:flex; gap:10px;"><button class="side-btn" style="flex:1;" onclick="exportHist(\''+m+'\')">コピー</button><button class="side-btn" style="flex:1; color:var(--accent);" onclick="resetHist(\''+m+'\')">全消去</button></div>';
+  }
+
+  function keepInputs(){ var d = { name: document.getElementById("shared-name").value, addr: document.getElementById("shared-addr").value, note: document.getElementById("shared-note").value, start: document.getElementById("shared-start-date").value, days: document.getElementById("shared-days").value }; localStorage.setItem("tomo_v195_keep", JSON.stringify(d)); }
+  function loadInputs(){ var d = JSON.parse(localStorage.getItem("tomo_v195_keep")); if(!d) return; document.getElementById("shared-name").value = d.name||""; document.getElementById("shared-addr").value = d.addr||""; document.getElementById("shared-note").value = d.note||""; document.getElementById("shared-start-date").value = d.start||""; document.getElementById("shared-days").value = d.days||"1"; }
+  function recalcPeriod(m, i, sStr){ var s = new Date(sStr); s.setHours(0,0,0,0); var logDate = new Date(hist[m][i].ts.split(' ')[0]); logDate.setHours(0,0,0,0); var diff = Math.floor((logDate-s)/(24*3600*1000)) + 1; hist[m][i].start = sStr; hist[m][i].days = (diff>0)?diff:1; save(); render(m); }
+  function updHist(m,i,k,v){ if(hist[m][i]){ hist[m][i][k]=v; save(); } }
+  function save(){ localStorage.setItem("tomo_v195_hist", JSON.stringify(hist)); }
+  function del(m,i){ if(confirm("消去？")){ hist[m].splice(i,1); save(); render(m); } }
+  function resetHist(m){ if(confirm("全消去？")){ hist[m]=[]; save(); render(m); } }
+  
+  function applyHist(m, i){ 
+    vibe(); var it=hist[m][i]; 
+    document.getElementById("shared-name").value=it.name; document.getElementById("shared-start-date").value=it.start; document.getElementById("shared-days").value=it.days; 
+    lastPeriodVal = parseInt(it.days) || 1;
+    
+    if (it.raw.yy) document.getElementById("a-yy").value = it.raw.yy;
+    if (it.raw.mm) document.getElementById("a-mm").value = pad(it.raw.mm);
+    if (it.raw.dd) document.getElementById("a-dd").value = pad(it.raw.dd);
+    
+    document.getElementById("a-h").value=pad(it.raw.h || 0); 
+    document.getElementById("a-m").value=pad(it.raw.m || 0); 
+    document.getElementById("a-s").value=pad(it.raw.s || 0); 
+    
+    toggleDateStepper('calc', it.raw.hasDate);
+    setLateStatus(it.st === "遅れ"); switchTab('calc'); 
+  }
+  function exportHist(m){ vibe(); var t="【履歴】\n"; hist[m].forEach(it=>t+="\n#"+it.name+"\n誤差:"+it.str+" "+it.st+"\n現在:"+it.v2+"\nカメラ:"+it.v3+"\n---"); var a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); document.body.removeChild(a); alert("コピーしました"); }
+</script>
+</body>
+</html>
