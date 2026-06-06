@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>ToMO System Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Yuji+Syuku&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&display=swap" rel="stylesheet">
   
-  <link class="image-tag" apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" type="image/png" href="icon.png">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,8 +16,8 @@
   <style>
     :root { --primary: #00d2ff; --bg: #0b0f19; --card: #161e2d; --text: #94a3b8; --accent: #ff4b5c; --ok: #00ff88; --clock: #f3ff12; --tool: #ff9ff3; }
     
-    /* 【フォント修正】極端な太字（900）を解除し、本来の綺麗な明朝体フォントに戻しました */
-    * { font-family: "Yuji Syuku", serif; box-sizing: border-box; }
+    /* 【フォント修正】極端な太字を解除し、元の美しい「行書体・楷書体」の雰囲気に戻しました */
+    * { font-family: "HG行書体", "KouzanBrushFont", "Klee One", "BIZ Serif", serif; box-sizing: border-box; }
     
     body { margin: 0; background: var(--bg); color: var(--text); overflow-y: auto; line-height: 1.2; padding-top: env(safe-area-inset-top); }
     .container { padding: 8px; max-width: 600px; margin: auto; display: flex; flex-direction: column; min-height: 100vh; }
@@ -567,7 +567,6 @@
       var col = it.st==="遅れ"?"var(--accent)":"var(--ok)";
       h += '<div class="hist-item" style="border-left-color:'+col+'">' +
            '<div class="hist-title-row"><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'name\',this.innerText)">'+it.name+'</span><button class="apply-btn" onclick="applyHist(\''+m+'\','+i+')">反映</button></div>' +
-           /* 【文言修正】「設定誤差:」から「誤差:」に変更しました */
            '<div style="background:'+col+'26; border:1px solid '+col+'; color:'+col+'; padding:8px; border-radius:8px; text-align:center; font-size:18px; margin-bottom:10px; font-weight:bold;">誤差: '+it.str+' '+it.st+'</div>' +
            '<div class="hist-data-line '+(it.type==='err'||it.type==='std'?'highlight-blue':'')+'"><span class="label-hist">現在時刻</span><span>'+it.v2+'</span></div>' +
            '<div class="hist-data-line '+(it.type==='err'||it.type==='cam'?'highlight-yellow':'')+'"><span class="label-hist">カメラ時刻</span><span>'+it.v3+'</span></div>' +
