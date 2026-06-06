@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>ToMO System Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Yuji+Syuku&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Yuji+Syuku&display=swap" rel="stylesheet">
   
+  <!-- アイコン設定 -->
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" type="image/png" href="icon.png">
   
@@ -112,14 +113,17 @@
       </div>
     </div>
 
+    <!-- 誤差タブ -->
     <div id="view-err">
       
+      <!-- 基準時ステッパー -->
       <div id="std-time-stepper-container" class="stepper-grid" style="margin-top: 10px; margin-bottom: 8px; display: none;">
         <div id="box-current-h" class="stepper"><span class="unit-label">基準時</span><button class="step-btn" onclick="spin('current-h',1,23)">▲</button><input type="number" id="current-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-h',-1,23)">▼</button></div>
         <div id="box-current-m" class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('current-m',1,59)">▲</button><input type="number" id="current-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-m',-1,59)">▼</button></div>
         <div id="box-current-s" class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('current-s',1,59)">▲</button><input type="number" id="current-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-s',-1,59)">▼</button></div>
       </div>
 
+      <!-- 切り替え用チェックボックス群 -->
       <div class="checkbox-row" style="margin-bottom: 12px; justify-content: space-between; border-bottom: 1px dashed #334155; padding-bottom: 8px;">
         <div>
           <input type="checkbox" id="toggle-change-std" onchange="toggleStdTimeStepper(this.checked); vibe();">
@@ -131,12 +135,14 @@
         </div>
       </div>
 
+      <!-- カメラ年月日エリア（日付ずれONで出現） -->
       <div id="date-stepper-area-err" class="stepper-grid" style="display: none;">
         <div class="stepper"><span class="unit-label">カメラ年</span><button class="step-btn" onclick="spin('e-yy',1,2100)">▲</button><input type="number" id="e-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('e-yy',-1,2020)">▼</button></div>
         <div class="stepper"><span class="unit-label">月</span><button class="step-btn" onclick="spin('e-mm',1,12)">▲</button><input type="number" id="e-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('e-mm',-1,12)">▼</button></div>
         <div class="stepper"><span class="unit-label">日</span><button class="step-btn" onclick="spin('e-dd',1,31)">▲</button><input type="number" id="e-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('e-dd',-1,31)">▼</button></div>
       </div>
 
+      <!-- カメラ時分秒エリア -->
       <div class="stepper-grid">
         <div class="stepper"><span class="unit-label">カメラ時</span><button class="step-btn" onclick="spin('e-h',1,23)">▲</button><input type="number" id="e-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-h',-1,23)">▼</button></div>
         <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('e-m',1,59)">▲</button><input type="number" id="e-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-m',-1,59)">▼</button></div>
@@ -146,6 +152,7 @@
       <button id="main-measure-btn" class="main-btn" onclick="runMeasure()">誤 差</button>
     </div>
 
+    <!-- 計算タブ -->
     <div id="view-calc" hidden>
       
       <div class="name-btn-row" style="justify-content: space-between; margin-bottom: 6px;">
@@ -153,6 +160,7 @@
         <button id="c-state-toggle" style="padding: 6px 20px; border-radius: 10px; border: 2px solid var(--accent); background: rgba(255,75,92,0.1); color: var(--accent); font-size: 18px;" onclick="toggleState()">遅れ</button>
       </div>
 
+      <!-- 日付ずれONの際の誤差側「年月日」ステッパー -->
       <div id="calc-err-date-container" class="stepper-grid" style="display: none; margin-bottom: 8px;">
         <div class="stepper"><span class="unit-label">誤差年</span><button class="step-btn" onclick="spin('a-yy',1,2100)">▲</button><input type="number" id="a-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('a-yy',-1,2020)">▼</button></div>
         <div class="stepper"><span class="unit-label">誤差月</span><button class="step-btn" onclick="spin('a-mm',1,12)">▲</button><input type="number" id="a-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('a-mm',-1,12)">▼</button></div>
@@ -170,6 +178,7 @@
         <label for="toggle-date-calc" class="checkbox-label">日付ずれ（計算基準の年月日）</label>
       </div>
 
+      <!-- 年月日エリア -->
       <div id="date-stepper-area-calc" class="stepper-grid" style="display: none;">
         <div class="stepper"><span class="unit-label">基準年</span><button class="step-btn" onclick="spin('c-yy',1,2100)">▲</button><input type="number" id="c-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('c-yy',-1,2020)">▼</button></div>
         <div class="stepper"><span class="unit-label">基準月</span><button class="step-btn" onclick="spin('c-mm',1,12)">▲</button><input type="number" id="c-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('c-mm',-1,12)">▼</button></div>
@@ -188,6 +197,7 @@
       </div>
     </div>
 
+    <!-- 道具タブ -->
     <div id="view-tool" hidden>
       <div class="tabs" style="margin-bottom: 12px;">
         <button id="btn-sw" class="tool-gengo-btn" onclick="setGengo('showa')">昭和</button>
@@ -279,7 +289,7 @@
   }
 
   function syncTime(){ 
-    // 外部通信を行わず、スマホの内蔵時計を使って即座に起動させます
+    // 【最重要修正】外部への一切の通信を排除し、端末の内蔵時計で即時起動します
     serverOffset = 0;
     isSynced = true; 
   }
@@ -593,4 +603,37 @@
   
   function applyHist(m, i){ 
     vibe(); var it=hist[m][i]; 
-    document.getElementById("shared-name").value=it.name; document.getElementById("shared-start-date
+    document.getElementById("shared-name").value=it.name; document.getElementById("shared-start-date").value=it.start; document.getElementById("shared-days").value=it.days; 
+    lastPeriodVal = parseInt(it.days) || 1;
+    
+    if (it.raw.yy) document.getElementById("a-yy").value = it.raw.yy;
+    if (it.raw.mm) document.getElementById("a-mm").value = pad(it.raw.mm);
+    if (it.raw.dd) document.getElementById("a-dd").value = pad(it.raw.dd);
+    
+    document.getElementById("a-h").value=pad(it.raw.h || 0); 
+    document.getElementById("a-m").value=pad(it.raw.m || 0); 
+    document.getElementById("a-s").value=pad(it.raw.s || 0); 
+    
+    toggleDateStepper('calc', it.raw.hasDate);
+    setLateStatus(it.st === "遅れ"); switchTab('calc'); 
+  }
+  function exportHist(m){ vibe(); var t="【履歴】\n"; hist[m].forEach(it=>t+="\n#"+it.name+"\n誤差:"+it.str+" "+it.st+"\n現在:"+it.v2+"\nカメラ:"+it.v3+"\n---"); var a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); document.body.removeChild(a); alert("コピーしました"); }
+
+  // 【無限ループ破壊用・強制解除の保険コード】
+  // 「同期中...」のまま3秒経過したら古いサービスワーカーを強制解除して画面を強制更新します
+  setTimeout(function() {
+    var info = document.getElementById("live-info");
+    if (info && info.innerText === "同期中...") {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) { registration.unregister(); }
+          window.location.reload(true);
+        });
+      } else {
+        window.location.reload(true);
+      }
+    }
+  }, 3000);
+</script>
+</body>
+</html>
