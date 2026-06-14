@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>ToMO System Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" type="image/png" href="icon.png">
@@ -16,8 +16,12 @@
   <style>
     :root { --primary: #00d2ff; --bg: #0b0f19; --card: #161e2d; --text: #94a3b8; --accent: #ff4b5c; --ok: #00ff88; --clock: #f3ff12; --tool: #ff9ff3; }
     
-    /* 【フォント修正】極端な太字を解除し、元の美しい「行書体・楷書体」の雰囲気に戻しました */
-    * { font-family: "HG行書体", "KouzanBrushFont", "Klee One", "BIZ Serif", serif; box-sizing: border-box; }
+    /* ご指定のフォント優先順位 */
+    * { 
+      font-family: ui-monospace, SFMono-Regular, "SF Pro Icons", "Helvetica Neue", fontawesome, 
+                   "Klee One", "クレー", "HG教科書体", "HG行書体", serif; 
+      box-sizing: border-box; 
+    }
     
     body { margin: 0; background: var(--bg); color: var(--text); overflow-y: auto; line-height: 1.2; padding-top: env(safe-area-inset-top); }
     .container { padding: 8px; max-width: 600px; margin: auto; display: flex; flex-direction: column; min-height: 100vh; }
@@ -42,14 +46,20 @@
     .side-btn { background: #1e293b; color: var(--text); border: 1px solid #475569; padding: 8px 10px; border-radius: 8px; font-size: 14px; white-space: nowrap; cursor: pointer; flex: none; font-weight: bold; }
 
     .stepper-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .stepper { background: #010409; border: 1px solid #334155; border-radius: 8px; text-align: center; position: relative; padding-top: 18px; }
+    
+    /* 下部にラベルを配置するため、paddingを調整 */
+    .stepper { background: #010409; border: 1px solid #334155; border-radius: 8px; text-align: center; position: relative; padding-bottom: 22px; }
     .stepper.disabled { opacity: 0.4; pointer-events: none; }
-    .unit-label { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--text); font-family: sans-serif; white-space: nowrap; }
-    .step-btn { background: #1e293b; color: var(--primary); border: none; width: 100%; padding: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
-    .step-val-input { background: transparent; border: none; color: #fff; font-size: 24px; text-align: center; width: 100%; outline: none; font-family: monospace; font-weight: bold; }
+    
+    /* ラベルを下に配置し、文字サイズを少し大きめ（14px）に変更 */
+    .unit-label { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text); white-space: nowrap; font-weight: 500; }
+    
+    .step-btn { background: #1e293b; color: var(--primary); border: none; width: 100%; padding: 4px; font-size: 16px; cursor: pointer; font-weight: bold; user-select: none; -webkit-user-select: none; }
+    .step-val-input { background: transparent; border: none; color: #fff; font-size: 24px; text-align: center; width: 100%; outline: none; font-weight: bold; }
 
     .main-btn { background: linear-gradient(135deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 22px; cursor: pointer; font-weight: bold; }
     .main-btn:disabled { background: #2d3748; color: #4b5563; cursor: not-allowed; }
+    .countdown-text { font-size: 1.4rem; font-weight: bold; color: var(--text); }
     .calc-btn { border: none; padding: 10px; border-radius: 30px; font-size: 16px; width: 100%; cursor: pointer; font-weight: bold; }
     
     .checkbox-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 2px 4px; }
@@ -82,7 +92,7 @@
   <div class="title">ToMO System Pro</div>
   
   <div class="clock-row">
-    <div id="live-info" style="color:var(--clock); font-family:monospace; font-size:15px; font-weight:bold;">同期中...</div>
+    <div id="live-info" style="color:var(--clock); font-size:15px; font-weight:bold;">同期中...</div>
     <a href="tel:117" class="tel-btn" onclick="vibe()">117接続</a>
   </div>
   
@@ -117,9 +127,9 @@
     <div id="view-err">
       
       <div id="std-time-stepper-container" class="stepper-grid" style="margin-top: 10px; margin-bottom: 8px; display: none;">
-        <div id="box-current-h" class="stepper"><span class="unit-label">基準時</span><button class="step-btn" onclick="spin('current-h',1,23)">▲</button><input type="number" id="current-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-h',-1,23)">▼</button></div>
-        <div id="box-current-m" class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('current-m',1,59)">▲</button><input type="number" id="current-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-m',-1,59)">▼</button></div>
-        <div id="box-current-s" class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('current-s',1,59)">▲</button><input type="number" id="current-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('current-s',-1,59)">▼</button></div>
+        <div id="box-current-h" class="stepper"><button class="step-btn" onmousedown="startSpin('current-h',1,23)" ontouchstart="startSpin('current-h',1,23)">▲</button><input type="number" id="current-h" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('current-h',-1,23)" ontouchstart="startSpin('current-h',-1,23)">▼</button><span class="unit-label">現在時</span></div>
+        <div id="box-current-m" class="stepper"><button class="step-btn" onmousedown="startSpin('current-m',1,59)" ontouchstart="startSpin('current-m',1,59)">▲</button><input type="number" id="current-m" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('current-m',-1,59)" ontouchstart="startSpin('current-m',-1,59)">▼</button><span class="unit-label">分</span></div>
+        <div id="box-current-s" class="stepper"><button class="step-btn" onmousedown="startSpin('current-s',1,59)" ontouchstart="startSpin('current-s',1,59)">▲</button><input type="number" id="current-s" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('current-s',-1,59)" ontouchstart="startSpin('current-s',-1,59)">▼</button><span class="unit-label">秒</span></div>
       </div>
 
       <div class="checkbox-row" style="margin-bottom: 12px; justify-content: space-between; border-bottom: 1px dashed #334155; padding-bottom: 8px;">
@@ -134,15 +144,15 @@
       </div>
 
       <div id="date-stepper-area-err" class="stepper-grid" style="display: none;">
-        <div class="stepper"><span class="unit-label">カメラ年</span><button class="step-btn" onclick="spin('e-yy',1,2100)">▲</button><input type="number" id="e-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('e-yy',-1,2020)">▼</button></div>
-        <div class="stepper"><span class="unit-label">月</span><button class="step-btn" onclick="spin('e-mm',1,12)">▲</button><input type="number" id="e-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('e-mm',-1,12)">▼</button></div>
-        <div class="stepper"><span class="unit-label">日</span><button class="step-btn" onclick="spin('e-dd',1,31)">▲</button><input type="number" id="e-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('e-dd',-1,31)">▼</button></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('e-yy',1,2100)" ontouchstart="startSpin('e-yy',1,2100)">▲</button><input type="number" id="e-yy" class="step-val-input" value="2026"><button class="step-btn" onmousedown="startSpin('e-yy',-1,2020)" ontouchstart="startSpin('e-yy',-1,2020)">▼</button><span class="unit-label">カメラ年</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('e-mm',1,12)" ontouchstart="startSpin('e-mm',1,12)">▲</button><input type="number" id="e-mm" class="step-val-input" value="01"><button class="step-btn" onmousedown="startSpin('e-mm',-1,12)" ontouchstart="startSpin('e-mm',-1,12)">▼</button><span class="unit-label">月</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('e-dd',1,31)" ontouchstart="startSpin('e-dd',1,31)">▲</button><input type="number" id="e-dd" class="step-val-input" value="01"><button class="step-btn" onmousedown="startSpin('e-dd',-1,31)" ontouchstart="startSpin('e-dd',-1,31)">▼</button><span class="unit-label">日</span></div>
       </div>
 
       <div class="stepper-grid">
-        <div class="stepper"><span class="unit-label">カメラ時</span><button class="step-btn" onclick="spin('e-h',1,23)">▲</button><input type="number" id="e-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-h',-1,23)">▼</button></div>
-        <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('e-m',1,59)">▲</button><input type="number" id="e-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-m',-1,59)">▼</button></div>
-        <div class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('e-s',1,59)">▲</button><input type="number" id="e-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('e-s',-1,59)">▼</button></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('e-h',1,23)" ontouchstart="startSpin('e-h',1,23)">▲</button><input type="number" id="e-h" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('e-h',-1,23)" ontouchstart="startSpin('e-h',-1,23)">▼</button><span class="unit-label">カメラ時</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('e-m',1,59)" ontouchstart="startSpin('e-m',1,59)">▲</button><input type="number" id="e-m" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('e-m',-1,59)" ontouchstart="startSpin('e-m',-1,59)">▼</button><span class="unit-label">分</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('e-s',1,59)" ontouchstart="startSpin('e-s',1,59)">▲</button><input type="number" id="e-s" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('e-s',-1,59)" ontouchstart="startSpin('e-s',-1,59)">▼</button><span class="unit-label">秒</span></div>
       </div>
 
       <button id="main-measure-btn" class="main-btn" onclick="runMeasure()">誤 差</button>
@@ -156,32 +166,32 @@
       </div>
 
       <div id="calc-err-date-container" class="stepper-grid" style="display: none; margin-bottom: 8px;">
-        <div class="stepper"><span class="unit-label">誤差年</span><button class="step-btn" onclick="spin('a-yy',1,2100)">▲</button><input type="number" id="a-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('a-yy',-1,2020)">▼</button></div>
-        <div class="stepper"><span class="unit-label">誤差月</span><button class="step-btn" onclick="spin('a-mm',1,12)">▲</button><input type="number" id="a-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('a-mm',-1,12)">▼</button></div>
-        <div class="stepper"><span class="unit-label">誤差日</span><button class="step-btn" onclick="spin('a-dd',1,31)">▲</button><input type="number" id="a-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('a-dd',-1,31)">▼</button></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('a-yy',1,2100)" ontouchstart="startSpin('a-yy',1,2100)">▲</button><input type="number" id="a-yy" class="step-val-input" value="2026"><button class="step-btn" onmousedown="startSpin('a-yy',-1,2020)" ontouchstart="startSpin('a-yy',-1,2020)">▼</button><span class="unit-label">誤差年</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('a-mm',1,12)" ontouchstart="startSpin('a-mm',1,12)">▲</button><input type="number" id="a-mm" class="step-val-input" value="01"><button class="step-btn" onmousedown="startSpin('a-mm',-1,12)" ontouchstart="startSpin('a-mm',-1,12)">▼</button><span class="unit-label">月</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('a-dd',1,31)" ontouchstart="startSpin('a-dd',1,31)">▲</button><input type="number" id="a-dd" class="step-val-input" value="01"><button class="step-btn" onmousedown="startSpin('a-dd',-1,31)" ontouchstart="startSpin('a-dd',-1,31)">▼</button><span class="unit-label">日</span></div>
       </div>
 
       <div class="stepper-grid">
-        <div class="stepper"><span class="unit-label">時</span><button class="step-btn" onclick="spin('a-h',1,23)">▲</button><input type="number" id="a-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('a-h',-1,23)">▼</button></div>
-        <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('a-m',1,59)">▲</button><input type="number" id="a-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('a-m',-1,59)">▼</button></div>
-        <div class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('a-s',1,59)">▲</button><input type="number" id="a-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('a-s',-1,59)">▼</button></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('a-h',1,23)" ontouchstart="startSpin('a-h',1,23)">▲</button><input type="number" id="a-h" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('a-h',-1,23)" ontouchstart="startSpin('a-h',-1,23)">▼</button><span class="unit-label">誤差時</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('a-m',1,59)" ontouchstart="startSpin('a-m',1,59)">▲</button><input type="number" id="a-m" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('a-m',-1,59)" ontouchstart="startSpin('a-m',-1,59)">▼</button><span class="unit-label">分</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('a-s',1,59)" ontouchstart="startSpin('a-s',1,59)">▲</button><input type="number" id="a-s" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('a-s',-1,59)" ontouchstart="startSpin('a-s',-1,59)">▼</button><span class="unit-label">秒</span></div>
       </div>
 
       <div class="checkbox-row" style="margin-top: 10px; margin-bottom: 12px;">
         <input type="checkbox" id="toggle-date-calc" onchange="toggleDateStepper('calc', this.checked); vibe();">
-        <label for="toggle-date-calc" class="checkbox-label">日付ずれ（計算基準の年月日）</label>
+        <label for="toggle-date-calc" class="checkbox-label">日付ずれ</label>
       </div>
 
       <div id="date-stepper-area-calc" class="stepper-grid" style="display: none;">
-        <div class="stepper"><span class="unit-label">基準年</span><button class="step-btn" onclick="spin('c-yy',1,2100)">▲</button><input type="number" id="c-yy" class="step-val-input" value="2026"><button class="step-btn" onclick="spin('c-yy',-1,2020)">▼</button></div>
-        <div class="stepper"><span class="unit-label">基準月</span><button class="step-btn" onclick="spin('c-mm',1,12)">▲</button><input type="number" id="c-mm" class="step-val-input" value="01"><button class="step-btn" onclick="spin('c-mm',-1,12)">▼</button></div>
-        <div class="stepper"><span class="unit-label">基準日</span><button class="step-btn" onclick="spin('c-dd',1,31)">▲</button><input type="number" id="c-dd" class="step-val-input" value="01"><button class="step-btn" onclick="spin('c-dd',-1,31)">▼</button></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('c-yy',1,2100)" ontouchstart="startSpin('c-yy',1,2100)">▲</button><input type="number" id="c-yy" class="step-val-input" value="2026"><button class="step-btn" onmousedown="startSpin('c-yy',-1,2020)" ontouchstart="startSpin('c-yy',-1,2020)">▼</button><span class="unit-label">基準年</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('c-mm',1,12)" ontouchstart="startSpin('c-mm',1,12)">▲</button><input type="number" id="c-mm" class="step-val-input" value="01"><button class="step-btn" onmousedown="startSpin('c-mm',-1,12)" ontouchstart="startSpin('c-mm',-1,12)">▼</button><span class="unit-label">月</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('c-dd',1,31)" ontouchstart="startSpin('c-dd',1,31)">▲</button><input type="number" id="c-dd" class="step-val-input" value="01"><button class="step-btn" onmousedown="startSpin('c-dd',-1,31)" ontouchstart="startSpin('c-dd',-1,31)">▼</button><span class="unit-label">日</span></div>
       </div>
 
       <div class="stepper-grid">
-        <div class="stepper"><span class="unit-label">時</span><button class="step-btn" onclick="spin('c-h',1,23)">▲</button><input type="number" id="c-h" class="step-val-input" value="00"><button class="step-btn" onclick="spin('c-h',-1,23)">▼</button></div>
-        <div class="stepper"><span class="unit-label">分</span><button class="step-btn" onclick="spin('c-m',1,59)">▲</button><input type="number" id="c-m" class="step-val-input" value="00"><button class="step-btn" onclick="spin('c-m',-1,59)">▼</button></div>
-        <div class="stepper"><span class="unit-label">秒</span><button class="step-btn" onclick="spin('c-s',1,59)">▲</button><input type="number" id="c-s" class="step-val-input" value="00"><button class="step-btn" onclick="spin('c-s',-1,59)">▼</button></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('c-h',1,23)" ontouchstart="startSpin('c-h',1,23)">▲</button><input type="number" id="c-h" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('c-h',-1,23)" ontouchstart="startSpin('c-h',-1,23)">▼</button><span class="unit-label">基準時</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('c-m',1,59)" ontouchstart="startSpin('c-m',1,59)">▲</button><input type="number" id="c-m" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('c-m',-1,59)" ontouchstart="startSpin('c-m',-1,59)">▼</button><span class="unit-label">分</span></div>
+        <div class="stepper"><button class="step-btn" onmousedown="startSpin('c-s',1,59)" ontouchstart="startSpin('c-s',1,59)">▲</button><input type="number" id="c-s" class="step-val-input" value="00"><button class="step-btn" onmousedown="startSpin('c-s',-1,59)" ontouchstart="startSpin('c-s',-1,59)">▼</button><span class="unit-label">秒</span></div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
@@ -199,11 +209,11 @@
       </div>
       <div class="card" style="background:rgba(255,159,243,0.05); border:1px solid var(--tool); padding:10px;">
         <div class="tool-input-grid">
-          <div class="stepper" style="padding-top:15px; height: 100%;">
-            <span id="gengo-label" class="unit-label">令和</span>
-            <button class="step-btn" onclick="spinGengo(1)">▲</button>
+          <div class="stepper" style="padding-top:5px; padding-bottom:22px; height: 100%;">
+            <button class="step-btn" onmousedown="startSpinGengo(1)" ontouchstart="startSpinGengo(1)">▲</button>
             <input type="number" id="gengo-year" class="step-val-input" value="1" oninput="syncFromGengoInput()">
-            <button class="step-btn" onclick="spinGengo(-1)">▼</button>
+            <button class="step-btn" onmousedown="startSpinGengo(-1)" ontouchstart="startSpinGengo(-1)">▼</button>
+            <span id="gengo-label" class="unit-label">令和</span>
           </div>
           <div class="tool-right-col">
             <div class="tool-row-item">
@@ -246,6 +256,9 @@
   var hist = JSON.parse(localStorage.getItem("tomo_v195_hist")) || {err:[], calc:[]};
   var lastPeriodVal = 1;
 
+  var spinTimer = null;
+  var spinInterval = null;
+
   window.onload = function(){ 
     syncTime(); setInterval(upd, 1000); initTime();
     
@@ -264,6 +277,10 @@
     lastPeriodVal = parseInt(document.getElementById("shared-days").value) || 1;
     
     render("err"); render("calc");
+
+    window.addEventListener('mouseup', stopSpin);
+    window.addEventListener('touchend', stopSpin);
+    window.addEventListener('touchcancel', stopSpin);
   };
 
   function initTime(){ 
@@ -298,7 +315,57 @@
   
   function pad(n){ return ("0"+n).slice(-2); }
   function vibe(){ if(navigator.vibrate) navigator.vibrate(40); }
-  function spin(id, v, m){ vibe(); var e = document.getElementById(id); var c = parseInt(e.value)+v; if(id.endsWith('yy')){ if(c>m)c=2020; else if(c<2020)c=m; e.value=c; return; } if(c>m)c=0; else if(c<0)c=m; e.value=pad(c); }
+
+  function startSpin(id, v, m) {
+    if (event) {
+      if (event.cancelable) event.preventDefault();
+    }
+    stopSpin();
+    spin(id, v, m);
+    
+    spinTimer = setTimeout(function() {
+      var intervalSpeed = id.endsWith('-s') ? 70 : 100;
+      spinInterval = setInterval(function() {
+        spin(id, v, m);
+      }, intervalSpeed);
+    }, 400);
+  }
+
+  function stopSpin() {
+    if (spinTimer) { clearTimeout(spinTimer); spinTimer = null; }
+    if (spinInterval) { clearInterval(spinInterval); spinInterval = null; }
+  }
+
+  function spin(id, v, m){ 
+    vibe(); 
+    var e = document.getElementById(id); 
+    var step = (id.endsWith('-s')) ? v * 10 : v; 
+    var c = parseInt(e.value) + step; 
+    
+    if(id.endsWith('yy')){ 
+      if(c>m) c=2020; else if(c<2020) c=m; 
+      e.value=c; 
+      return; 
+    } 
+    if(c>m) c=0; else if(c<0) {
+      c = (id.endsWith('-s')) ? 50 : m;
+    }
+    e.value=pad(c); 
+  }
+
+  function startSpinGengo(v) {
+    if (event) {
+      if (event.cancelable) event.preventDefault();
+    }
+    stopSpin();
+    spinGengo(v);
+    spinTimer = setTimeout(function() {
+      spinInterval = setInterval(function() {
+        spinGengo(v);
+      }, 120);
+    }, 400);
+  }
+
   function toggleArea(id){ vibe(); var e = document.getElementById(id); e.style.display = (e.style.display==="block")?"none":"block"; }
   
   function toggleStdTimeStepper(checked) {
@@ -380,10 +447,6 @@
 
     if(t === 'calc') {
       var n = new Date(Date.now() + serverOffset);
-      document.getElementById("c-h").value = pad(n.getHours());
-      document.getElementById("c-m").value = pad(n.getMinutes());
-      document.getElementById("c-s").value = "00";
-      
       if(!document.getElementById("toggle-date-calc").checked) {
         document.getElementById("c-yy").value = n.getFullYear();
         document.getElementById("c-mm").value = pad(n.getMonth()+1);
@@ -566,7 +629,10 @@
     hist[m].forEach((it, i) => {
       var col = it.st==="遅れ"?"var(--accent)":"var(--ok)";
       h += '<div class="hist-item" style="border-left-color:'+col+'">' +
-           '<div class="hist-title-row"><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'name\',this.innerText)">'+it.name+'</span><button class="apply-btn" onclick="applyHist(\''+m+'\','+i+')">反映</button></div>' +
+           '<div class="hist-title-row">' +
+             '<span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'name\',this.innerText)">'+it.name+'</span>' +
+             '<button class="apply-btn" onclick="applyHist(\''+m+'\','+i+')">反映</button>' +
+           '</div>' +
            '<div style="background:'+col+'26; border:1px solid '+col+'; color:'+col+'; padding:8px; border-radius:8px; text-align:center; font-size:18px; margin-bottom:10px; font-weight:bold;">誤差: '+it.str+' '+it.st+'</div>' +
            '<div class="hist-data-line '+(it.type==='err'||it.type==='std'?'highlight-blue':'')+'"><span class="label-hist">現在時刻</span><span>'+it.v2+'</span></div>' +
            '<div class="hist-data-line '+(it.type==='err'||it.type==='cam'?'highlight-yellow':'')+'"><span class="label-hist">カメラ時刻</span><span>'+it.v3+'</span></div>' +
@@ -591,22 +657,86 @@
   function del(m,i){ if(confirm("消去？")){ hist[m].splice(i,1); save(); render(m); } }
   function resetHist(m){ if(confirm("全消去？")){ hist[m]=[]; save(); render(m); } }
   
+  // 反映ボタンを押した時の処理 (applyHist)
   function applyHist(m, i){ 
-    vibe(); var it=hist[m][i]; 
-    document.getElementById("shared-name").value=it.name; document.getElementById("shared-start-date").value=it.start; document.getElementById("shared-days").value=it.days; 
-    lastPeriodVal = parseInt(it.days) || 1;
+    vibe(); 
+    var it = hist[m][i]; 
+    document.getElementById("shared-name").value = it.name; 
+    document.getElementById("shared-start-date").value = it.start; 
+    document.getElementById("shared-days").value = it.days; 
     
-    if (it.raw.yy) document.getElementById("a-yy").value = it.raw.yy;
-    if (it.raw.mm) document.getElementById("a-mm").value = pad(it.raw.mm);
-    if (it.raw.dd) document.getElementById("a-dd").value = pad(it.raw.dd);
+    // 住所・備考・共通入力情報の永続化を同期
+    document.getElementById("shared-addr").value = it.addr || "";
+    document.getElementById("shared-note").value = it.note || "";
+    keepInputs();
+
+    // 履歴オブジェクト（it.raw）から誤差情報とカメラ時刻を「計算」タブのUIへ完全復元
+    if(it.raw) {
+      // 1. 遅れ・進みステータスの復元
+      setLateStatus(it.st === "遅れ");
+
+      // 2. 誤差（時・分・秒）の流し込み
+      document.getElementById("a-h").value = pad(it.raw.h || 0);
+      document.getElementById("a-m").value = pad(it.raw.m || 0);
+      document.getElementById("a-s").value = pad(it.raw.s || 0);
+
+      // 3. 日付ずれチェックと、誤差年月日・基準年月日の連動復元
+      var hasDate = !!it.raw.hasDate;
+      toggleDateStepper('calc', hasDate);
+
+      if(hasDate) {
+        // 誤差（年月日）の復元
+        document.getElementById("a-yy").value = it.raw.yy || 2026;
+        document.getElementById("a-mm").value = pad(it.raw.mm || 1);
+        document.getElementById("a-dd").value = pad(it.raw.dd || 1);
+
+        // 基準カメラ時刻文字列（YYYY/MM/DD...）を分解して、基準（年月日）へ復元
+        if(it.v3 && it.v3 !== "-") {
+          var parts = it.v3.split(" ");
+          if(parts[0]) {
+            var dParts = parts[0].split("/");
+            if(dParts.length === 3) {
+              document.getElementById("c-yy").value = dParts[0];
+              document.getElementById("c-mm").value = pad(dParts[1]);
+              document.getElementById("c-dd").value = pad(dParts[2]);
+            }
+          }
+        }
+      }
+
+      // 4. 基準時刻（時・分・秒）の復元（カメラ時刻文字列から抽出）
+      if(it.v3 && it.v3 !== "-") {
+        var parts = it.v3.split(" ");
+        var timePart = parts[1] || parts[0]; // 日付の有無に対応
+        if(timePart) {
+          var tParts = timePart.split(":");
+          if(tParts.length === 3) {
+            document.getElementById("c-h").value = pad(tParts[0]);
+            document.getElementById("c-m").value = pad(tParts[1]);
+            document.getElementById("c-s").value = pad(tParts[2]);
+          }
+        }
+      }
+    }
     
-    document.getElementById("a-h").value=pad(it.raw.h || 0); 
-    document.getElementById("a-m").value=pad(it.raw.m || 0); 
-    document.getElementById("a-s").value=pad(it.raw.s || 0); 
-    
-    toggleDateStepper('calc', it.raw.hasDate);
-    setLateStatus(it.st === "遅れ"); switchTab('calc'); 
+    // 計算タブへ切り替え
+    switchTab('calc'); 
+
+    // ★【修正】フォーカス移動先を「名称の入力欄（shared-name）」に変更
+    setTimeout(function() {
+      var targetInput = document.getElementById("shared-name");
+      if (targetInput) {
+        // 名称入力欄（最上部）へスムーズスクロール
+        targetInput.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+        
+        // 入力フォームにカーソルを合わせ、即座に編集できる状態にする
+        setTimeout(function() {
+          targetInput.focus();
+        }, 100);
+      }
+    }, 300);
   }
+  
   function exportHist(m){ vibe(); var t="【履歴】\n"; hist[m].forEach(it=>t+="\n#"+it.name+"\n誤差:"+it.str+" "+it.st+"\n現在:"+it.v2+"\nカメラ:"+it.v3+"\n---"); var a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); document.body.removeChild(a); alert("コピーしました"); }
 
   setTimeout(function() {
