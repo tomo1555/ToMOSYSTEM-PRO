@@ -5,8 +5,8 @@
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
-  <link rel="apple-touch-icon" href="icon.png">
-  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png?v=1.0">
+  <link rel="icon" type="image/png" href="icon.png?v=1.0">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -60,7 +60,7 @@
     .main-btn { background: linear-gradient(135deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 22px; cursor: pointer; font-weight: bold; }
     .main-btn:disabled { background: #2d3748; color: #4b5563; cursor: not-allowed; }
     .countdown-text { font-size: 1.4rem; font-weight: bold; color: var(--text); }
-    .calc-btn { border: none; padding: 10px; border-radius: 30px; font-size: 16px; width: 100%; cursor: pointer; font-weight: bold; }
+    .calc-btn { border: none; padding: 12px 10px; border-radius: 30px; font-size: 16px; width: 100%; cursor: pointer; font-weight: bold; }
     
     .checkbox-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 2px 4px; }
     .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; margin: 0; }
@@ -195,8 +195,8 @@
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-        <button id="calc-std-btn" class="calc-btn" style="background:linear-gradient(135deg,#00d2ff,#3a7bd5); color:#fff;" onclick="runCalc('std')">現在時刻を知る</button>
-        <button id="calc-cam-btn" class="calc-btn" style="background:linear-gradient(135deg,#f3ff12,#ffcc00); color:#000;" onclick="runCalc('cam')">カメラ時刻を知る</button>
+        <button id="calc-std-btn" class="calc-btn" style="background:linear-gradient(135deg,#00d2ff,#3a7bd5); color:#fff;" onclick="runCalc('std')">補正時刻確認</button>
+        <button id="calc-cam-btn" class="calc-btn" style="background:linear-gradient(135deg,#f3ff12,#ffcc00); color:#000;" onclick="runCalc('cam')">カメラ表示時刻確認</button>
       </div>
     </div>
 
@@ -245,8 +245,9 @@
 </div>
 
 <script>
+  // ★【更新対策】sw.js 登録処理の後ろに ?v=1.0 を追加
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
+    navigator.serviceWorker.register('sw.js?v=1.0')
       .then(() => console.log('ServiceWorker registered successfully.'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   }
@@ -657,7 +658,6 @@
   function del(m,i){ if(confirm("消去？")){ hist[m].splice(i,1); save(); render(m); } }
   function resetHist(m){ if(confirm("全消去？")){ hist[m]=[]; save(); render(m); } }
   
-  // 反映ボタンを押した時の処理 (applyHist)
   function applyHist(m, i){ 
     vibe(); 
     var it = hist[m][i]; 
@@ -665,32 +665,25 @@
     document.getElementById("shared-start-date").value = it.start; 
     document.getElementById("shared-days").value = it.days; 
     
-    // 住所・備考・共通入力情報の永続化を同期
     document.getElementById("shared-addr").value = it.addr || "";
     document.getElementById("shared-note").value = it.note || "";
     keepInputs();
 
-    // 履歴オブジェクト（it.raw）から誤差情報とカメラ時刻を「計算」タブのUIへ完全復元
     if(it.raw) {
-      // 1. 遅れ・進みステータスの復元
       setLateStatus(it.st === "遅れ");
 
-      // 2. 誤差（時・分・秒）の流し込み
       document.getElementById("a-h").value = pad(it.raw.h || 0);
       document.getElementById("a-m").value = pad(it.raw.m || 0);
       document.getElementById("a-s").value = pad(it.raw.s || 0);
 
-      // 3. 日付ずれチェックと、誤差年月日・基準年月日の連動復元
       var hasDate = !!it.raw.hasDate;
       toggleDateStepper('calc', hasDate);
 
       if(hasDate) {
-        // 誤差（年月日）の復元
         document.getElementById("a-yy").value = it.raw.yy || 2026;
         document.getElementById("a-mm").value = pad(it.raw.mm || 1);
         document.getElementById("a-dd").value = pad(it.raw.dd || 1);
 
-        // 基準カメラ時刻文字列（YYYY/MM/DD...）を分解して、基準（年月日）へ復元
         if(it.v3 && it.v3 !== "-") {
           var parts = it.v3.split(" ");
           if(parts[0]) {
@@ -704,10 +697,9 @@
         }
       }
 
-      // 4. 基準時刻（時・分・秒）の復元（カメラ時刻文字列から抽出）
       if(it.v3 && it.v3 !== "-") {
         var parts = it.v3.split(" ");
-        var timePart = parts[1] || parts[0]; // 日付の有無に対応
+        var timePart = parts[1] || parts[0]; 
         if(timePart) {
           var tParts = timePart.split(":");
           if(tParts.length === 3) {
@@ -719,17 +711,12 @@
       }
     }
     
-    // 計算タブへ切り替え
     switchTab('calc'); 
 
-    // ★【修正】フォーカス移動先を「名称の入力欄（shared-name）」に変更
     setTimeout(function() {
       var targetInput = document.getElementById("shared-name");
       if (targetInput) {
-        // 名称入力欄（最上部）へスムーズスクロール
         targetInput.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
-        
-        // 入力フォームにカーソルを合わせ、即座に編集できる状態にする
         setTimeout(function() {
           targetInput.focus();
         }, 100);
