@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-sys-v2026';  // ←このように書き換える
+const CACHE_NAME = 'tomo-sys-v1.0';  // ←このように書き換える
 const ASSETS = [
   './',
   './index.html',
