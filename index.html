@@ -5,8 +5,8 @@
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
-  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.1">
-  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.1">
+  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.2">
+  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.2">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -47,7 +47,27 @@
     .stepper-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     
     .stepper { background: #010409; border: 1px solid #334155; border-radius: 8px; text-align: center; position: relative; padding-bottom: 24px; transition: opacity 0.2s ease; }
-    .stepper.disabled { opacity: 0.25; pointer-events: none; }
+    
+    /* ★【修正】パターンA（斜線ストライプ）＋ラベルも文字も薄くしない指定 */
+    .stepper.disabled { 
+      background: linear-gradient(45deg, #090d16 25%, #010409 25%, #010409 50%, #090d16 50%, #090d16 75%, #010409 75%, #010409 100%) !important;
+      background-size: 20px 20px !important;
+      border-color: #1e293b !important; 
+      opacity: 1.0 !important;
+      pointer-events: none; /* 操作禁止 */
+    }
+    .stepper.disabled .step-val-input { 
+      color: #fff !important; 
+      -webkit-text-fill-color: #fff !important;
+      opacity: 1.0 !important;
+    }
+    .stepper.disabled .step-btn {
+      color: #1e293b !important; /* ▲▼ボタンは背景と同化させて見えなくする */
+    }
+    .stepper.disabled .unit-label { 
+      color: var(--text) !important; /* ★下部ラベル（誤差時など）も薄くせず元の色を維持 */
+      opacity: 1.0 !important;
+    }
     
     .unit-label { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text); white-space: nowrap; font-weight: 500; }
     
@@ -248,7 +268,7 @@
 
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v=1.1')
+    navigator.serviceWorker.register('sw.js?v=1.2')
       .then(() => console.log('ServiceWorker registered successfully.'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   }
@@ -419,7 +439,6 @@
     lastPeriodVal = nextDays;
   }
 
-  // ★【修正】カレンダーから保存開始日を変えた際、期間の自動計算だけでなくキープ処理（keepInputs）も走らせる
   function syncDaysFromCalendar(sStr){
     var s = new Date(sStr); s.setHours(0,0,0,0);
     var t = new Date(); t.setHours(0,0,0,0);
@@ -427,7 +446,7 @@
     var finalDays = (diff>0) ? diff : 1;
     document.getElementById("shared-days").value = finalDays;
     lastPeriodVal = finalDays;
-    keepInputs(); // ←追加：変更された自動計算日数を即座に保存
+    keepInputs(); 
   }
 
   function scrollToHist(){
@@ -670,12 +689,25 @@
   function del(m,i){ if(confirm("消去？")){ hist[m].splice(i,1); save(); render(m); } }
   function resetHist(m){ if(confirm("全消去？")){ hist[m]=[]; save(); render(m); } }
   
+  /* ★【修正】反映ボタン時に、保存開始日と当日の日付から「保存期間」を正しく自動再計算する処理 */
   function applyHist(m, i){ 
     vibe(); 
     var it = hist[m][i]; 
     document.getElementById("shared-name").value = it.name; 
     document.getElementById("shared-start-date").value = it.start; 
-    document.getElementById("shared-days").value = it.days; 
+    
+    // 保存開始日と今日の日付の差分から保存期間（days）を自動算出して補正
+    if(it.start) {
+      var s = new Date(it.start); s.setHours(0,0,0,0);
+      var today = new Date(); today.setHours(0,0,0,0);
+      var diff = Math.floor((today - s) / (24 * 3600 * 1000)) + 1;
+      var calcDays = (diff > 0) ? diff : 1;
+      document.getElementById("shared-days").value = calcDays;
+      lastPeriodVal = calcDays;
+    } else {
+      document.getElementById("shared-days").value = it.days || "1";
+      lastPeriodVal = parseInt(it.days) || 1;
+    }
     
     document.getElementById("shared-addr").value = it.addr || "";
     document.getElementById("shared-note").value = it.note || "";
