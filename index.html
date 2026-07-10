@@ -287,21 +287,26 @@
     setInterval(upd, 1000); 
     initTime();
     
-    var n = new Date();
-    n.setDate(n.getDate() - 7);
-    var targetStr = n.getFullYear() + "-" + pad(n.getMonth()+1) + "-" + pad(n.getDate());
-    
-    document.getElementById("shared-name").value = "";
-    document.getElementById("shared-addr").value = "";
-    document.getElementById("shared-note").value = "";
-    document.getElementById("shared-start-date").value = targetStr;
-    document.getElementById("shared-days").value = "8";
-    localStorage.removeItem("tomo_v195_keep");
+    var hasKeep = localStorage.getItem("tomo_v195_keep");
+    if(hasKeep) {
+      loadInputs();
+      lastPeriodVal = parseInt(document.getElementById("shared-days").value) || 8;
+    } else {
+      var n = new Date();
+      n.setDate(n.getDate() - 7);
+      var targetStr = n.getFullYear() + "-" + pad(n.getMonth()+1) + "-" + pad(n.getDate());
+      
+      document.getElementById("shared-name").value = "";
+      document.getElementById("shared-addr").value = "";
+      document.getElementById("shared-note").value = "";
+      document.getElementById("shared-start-date").value = targetStr;
+      document.getElementById("shared-days").value = "8";
+      lastPeriodVal = 8;
+      keepInputs();
+    }
     
     var initBirth = "1975-02-18";
     syncFromCalendar(initBirth);
-    
-    lastPeriodVal = 8;
     
     render("err"); 
     render("calc");
@@ -692,7 +697,7 @@
              '<span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'name\',this.innerText)">'+it.name+'</span>' +
              '<button class="apply-btn" onclick="applyHist(\''+m+'\','+i+')">反映</button>' +
            '</div>' +
-           '<div style="background:'+col+'26; border:1px solid '+col+'; color:'+col+'; padding:8px; border-radius:8px; text-align:center; font-size:18px; margin-bottom:10px; font-weight:bold;">誤差: '+it.str+' '+it.st+'</div>' +
+           '<div style="background:'+col+'26; border:1px solid '+col+'; color:'+col+'; padding:8px; border-radius:8px; text-align:center; font-size:18px; margin-bottom:10px; font-weight:bold;">誤差: <span style="color:#fff;">'+it.str+'</span> '+it.st+'</div>' +
            '<div class="hist-data-line '+(it.type==='err'||it.type==='std'?'highlight-blue':'')+'"><span class="label-hist">'+labelTimeName+'</span><span>'+it.v2+'</span></div>' +
            '<div class="hist-data-line '+(it.type==='err'||it.type==='cam'?'highlight-yellow':'')+'"><span class="label-hist">カメラ時刻</span><span>'+it.v3+'</span></div>' +
            '<div class="hist-data-line"><span class="label-hist">住所</span><span class="edit-val" contenteditable="true" onblur="updHist(\''+m+'\','+i+',\'addr\',this.innerText)">'+(it.addr||"-")+'</span></div>' +
@@ -722,21 +727,15 @@
     var it = hist[m][i]; 
     document.getElementById("shared-name").value = it.name; 
     document.getElementById("shared-start-date").value = it.start;
-    if(it.start) {
-      var s = new Date(it.start); s.setHours(0,0,0,0);
-      var today = new Date(); today.setHours(0,0,0,0);
-      var diff = Math.floor((today - s) / (24 * 3600 * 1000)) + 1;
-      var calcDays = (diff > 0) ? diff : 1;
-      document.getElementById("shared-days").value = calcDays;
-      lastPeriodVal = calcDays;
-    } else {
-      document.getElementById("shared-days").value = it.days || "1";
-      lastPeriodVal = parseInt(it.days) || 1;
-    }
+    
+    var targetDays = parseInt(it.days) || 1;
+    document.getElementById("shared-days").value = targetDays;
+    lastPeriodVal = targetDays;
     
     document.getElementById("shared-addr").value = it.addr || "";
     document.getElementById("shared-note").value = it.note || "";
     keepInputs();
+    
     if(it.raw) {
       setLateStatus(it.st === "遅れ");
       document.getElementById("a-h").value = pad(it.raw.h || 0);
