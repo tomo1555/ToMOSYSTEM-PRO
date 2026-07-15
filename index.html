@@ -5,8 +5,8 @@
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
-  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.5">
-  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.5">
+  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.6">
+  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.6">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -114,8 +114,8 @@
     .lock-btn.locked { color: var(--accent); border-color: var(--accent); background: rgba(255,75,92,0.05); }
     .lock-btn.unlocked { color: var(--ok); border-color: var(--ok); background: rgba(0,255,136,0.05); }
 
-    /* 【年齢早見表】コンテナ高さを420pxに固定 */
-    .age-chart-container { max-height: 420px; overflow-y: auto; border: 1px solid #334155; border-radius: 8px; margin-top: 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; position: relative; }
+    /* 【年齢早見表】コンテナ高さを調整して10行表示 */
+    .age-chart-container { max-height: 445px; overflow-y: auto; border: 1px solid #334155; border-radius: 8px; margin-top: 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; position: relative; }
     .age-chart-table { width: 100%; border-collapse: collapse; color: #fff; font-size: 16px; table-layout: fixed; } 
     .age-chart-table th { background: #161e2d; color: var(--tool); position: sticky; top: 0; padding: 10px 6px; font-weight: bold; border-bottom: 2px solid #334155; z-index: 10; font-size: 16px; }
     .age-chart-table td { padding: 10px 4px; border-bottom: 1px solid #1e293b; text-align: center; } 
@@ -290,19 +290,19 @@
       </div>
       
       <div class="age-jump-row">
-        <button class="age-jump-btn" onclick="jumpToAgeYear('h')">平成</button>
-        <button class="age-jump-btn" onclick="jumpToAgeYear('s')">昭和</button>
-        <button class="age-jump-btn" onclick="jumpToAgeYear('00')">'00</button>
-        <button class="age-jump-btn" onclick="jumpToAgeYear('75')">'75</button>
-        <button class="age-jump-btn" onclick="jumpToAgeYear('50')">'50</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('h10')">平成10年</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('s60')">昭和60年</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('s50')">昭和50年</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('s40')">昭和40年</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('s30')">昭和30年</button>
       </div>
 
       <div class="age-chart-container" id="age-chart-scroll-box">
         <table class="age-chart-table">
           <thead>
             <tr>
-              <th style="width: 25%;">年齢</th>
               <th style="width: 55%;">生まれ年 (西暦/元号)</th>
+              <th style="width: 25%;">年齢</th>
               <th style="width: 20%;">干支</th>
             </tr>
           </thead>
@@ -321,7 +321,7 @@
 
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v=1.5')
+    navigator.serviceWorker.register('sw.js?v=1.6')
       .then(() => console.log('ServiceWorker registered successfully.'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   }
@@ -366,6 +366,9 @@
     render("calc");
     applyCalcLockUI();
     renderAgeChart(); 
+
+    var activeTab = localStorage.getItem("tomo_active_tab") || "err";
+    switchTab(activeTab);
 
     window.addEventListener('mouseup', stopSpin);
     window.addEventListener('touchend', stopSpin);
@@ -537,6 +540,7 @@
 
   function switchTab(t){ 
     vibe(); 
+    localStorage.setItem("tomo_active_tab", t);
     document.getElementById("view-err").hidden = (t !== "err"); 
     document.getElementById("view-calc").hidden = (t !== "calc"); 
     document.getElementById("view-tool").hidden = (t !== "tool");
@@ -563,6 +567,12 @@
         document.getElementById("c-dd").value = pad(n.getDate());
       }
     }
+
+    if(t === 'chart') {
+      setTimeout(function() {
+        scrollToAge(18);
+      }, 50);
+    }
   }
 
   function setGengo(g) { 
@@ -570,9 +580,26 @@
     ['sw','h','r','s'].forEach(id => document.getElementById('btn-'+id).classList.remove('active')); 
     document.getElementById('btn-'+(g==='showa'?'sw':g==='heisei'?'h':g==='reiwa'?'r':'s')).classList.add('active'); 
     document.getElementById('gengo-label').innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[g];
-    var testYear = 0; if(g==='reiwa') testYear = masterYear - 2018;
-    else if(g==='heisei') testYear = masterYear - 1988; else if(g==='showa') testYear = masterYear - 1925; else testYear = masterYear;
-    if(testYear <= 0 && g !== 'seireki') { masterYear = (g==='reiwa')?2019:(g==='heisei')?1989:1926; }
+    
+    // 各元号の有効期間（西暦）に masterYear を適切に収める
+    if (g === 'reiwa') {
+      if (masterYear < 2019 || masterYear > 2026) {
+        masterYear = 2026; // 令和のデフォルト（最新の令和8年/2026年）
+      }
+    } else if (g === 'heisei') {
+      if (masterYear < 1989 || masterYear > 2019) {
+        masterYear = 2000; // 平成のデフォルト（中期の平成12年/2000年）
+      }
+    } else if (g === 'showa') {
+      if (masterYear < 1926 || masterYear > 1989) {
+        masterYear = 1975; // 昭和のデフォルト（昭和50年/1975年）
+      }
+    } else if (g === 'seireki') {
+      if (masterYear < 1900 || masterYear > 2026) {
+        masterYear = 2026;
+      }
+    }
+
     refreshGengoYearDisplay(); updateToolFromMaster();
   }
   function refreshGengoYearDisplay() { var e = document.getElementById("gengo-year"); if(currentGengo==='reiwa') e.value = masterYear - 2018;
@@ -627,8 +654,8 @@
       var eto = etos[birthYear % 12] + "年";
 
       h += '<tr id="yr-' + birthYear + '">' +
-           "<td style='font-weight:bold; color:var(--clock); font-size:18px;'>" + age + " 歳</td>" +
            "<td>" + birthYear + "年 (" + gengoStr + ")</td>" +
+           "<td style='font-weight:bold; color:var(--clock); font-size:18px;'>" + age + " 歳</td>" +
            "<td style='color:var(--text);'>" + eto + "</td>" +
            "</tr>";
     }
@@ -638,29 +665,32 @@
   /* 【年齢早見表精密スクロール】指定の生まれ年を、ヘッダーに隠れないように先頭にピタッとスクロールします */
   function jumpToAgeYear(key) {
     vibe();
-    var targetYear = 2026;
-    
-    // ご指定いただいた条件を完璧にマッピングします
-    if (key === 'h' || key === '00') {
-      targetYear = 2000; // 26歳 (平成12年/2000年)
-    } else if (key === 's' || key === '75') {
-      targetYear = 1975; // 51歳 (昭和50年/1975年)
-    } else if (key === '50') {
-      targetYear = 1950; // 76歳 (昭和25年/1950年)
+    var age = 18;
+    // 平成10年、昭和60年、昭和50年、昭和40年、昭和30年に対応
+    if (key === 'h10') {
+      age = 28; // 平成10年
+    } else if (key === 's60') {
+      age = 41; // 昭和60年
+    } else if (key === 's50') {
+      age = 51; // 昭和50年
+    } else if (key === 's40') {
+      age = 61; // 昭和40年
+    } else if (key === 's30') {
+      age = 71; // 昭和30年
     }
+    scrollToAge(age);
+  }
 
+  /* 指定された年齢（の行）にスクロールします */
+  function scrollToAge(age) {
+    var targetYear = 2026 - age;
     var targetEl = document.getElementById("yr-" + targetYear);
     var container = document.getElementById("age-chart-scroll-box");
     
     if (targetEl && container) {
-      // stickyヘッダーの高さを取得（動的対応）
       var thEl = container.querySelector("th");
       var headerHeight = thEl ? thEl.offsetHeight : 38;
-      
-      // 対象要素のコンテナ内における正確な相対高さを計算
       var targetScrollTop = targetEl.offsetTop - headerHeight;
-      
-      // コンテナ内のスクロールを設定
       container.scrollTop = targetScrollTop;
     }
   }
