@@ -5,8 +5,8 @@
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
-  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.4">
-  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.4">
+  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.5">
+  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.5">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -40,11 +40,18 @@
     .clock-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--clock); margin-bottom: 8px; }
     .tel-btn { background: #ff4b5c; color: #fff; text-decoration: none; padding: 4px 12px; border-radius: 8px; font-size: 14px; }
     
-    .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
-    .tab-btn { flex: 1; padding: 12px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 22px; border-radius: 8px; font-weight: bold; }
+    /* 変則タブレイアウト */
+    .tabs-wrapper { display: flex; gap: 6px; margin-bottom: 8px; height: 58px; }
+    .tabs-main-left { display: flex; flex: 1.8; gap: 6px; }
+    .tabs-sub-right { display: flex; flex-direction: column; flex: 1.2; gap: 4px; }
+
+    .tab-btn { flex: 1; height: 100%; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 20px; border-radius: 8px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; }
     .tab-btn.active { color: var(--primary); background: #2d3748; border-color: var(--primary); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-    .tab-tool { flex: 0 0 80px; padding: 12px 0; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 20px; border-radius: 8px; text-align: center; font-weight: bold; }
-    .tab-tool.active { color: var(--tool); background: #2d3748; border-color: var(--tool); }
+    
+    /* 右側上下2段のミニタブ専用スタイル */
+    .tab-sub-btn { height: 27px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 14px; border-radius: 6px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; }
+    .tab-sub-btn.tool-active { color: var(--tool) !important; background: #2d3748 !important; border-color: var(--tool) !important; }
+    .tab-sub-btn.chart-active { color: var(--clock) !important; background: #2d3748 !important; border-color: var(--clock) !important; }
     
     .card { background: var(--card); border-radius: 12px; padding: 10px; border: 1px solid #2d3748; margin-bottom: 10px; }
     .name-btn-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
@@ -91,8 +98,11 @@
     .label-hist { min-width: 70px; color: var(--text); font-size: 15px; flex: none; font-weight: bold; }
     .apply-btn { background: var(--ok); color: #000; border: none; padding: 4px 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-    .tool-gengo-btn { flex: 1; padding: 10px 0; font-size: 16px !important; border-radius: 8px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-weight: bold; }
+    /* 元号タブ */
+    .tool-gengo-tabs-container { display: flex; width: 100%; gap: 6px; margin-bottom: 12px; }
+    .tool-gengo-btn { flex: 1; padding: 10px 0; font-size: 16px !important; border-radius: 8px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-weight: bold; text-align: center; }
     .tool-gengo-btn.active { color: var(--tool) !important; border-color: var(--tool) !important; background: #2d3748 !important; }
+    
     .highlight-blue { background: rgba(0,210,255,0.25) !important; color: #fff !important; border: 1px solid var(--primary); }
     .highlight-yellow { background: rgba(243,255,18,0.25) !important; color: #fff !important; border: 1px solid var(--clock); }
 
@@ -103,6 +113,18 @@
     .lock-btn { background: #1e293b; border: 1px solid #475569; border-radius: 8px; color: var(--text); font-size: 16px; padding: 4px 10px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 42px; height: 34px; margin-left: 8px; }
     .lock-btn.locked { color: var(--accent); border-color: var(--accent); background: rgba(255,75,92,0.05); }
     .lock-btn.unlocked { color: var(--ok); border-color: var(--ok); background: rgba(0,255,136,0.05); }
+
+    /* 【年齢早見表】コンテナ高さを420pxに固定 */
+    .age-chart-container { max-height: 420px; overflow-y: auto; border: 1px solid #334155; border-radius: 8px; margin-top: 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; position: relative; }
+    .age-chart-table { width: 100%; border-collapse: collapse; color: #fff; font-size: 16px; table-layout: fixed; } 
+    .age-chart-table th { background: #161e2d; color: var(--tool); position: sticky; top: 0; padding: 10px 6px; font-weight: bold; border-bottom: 2px solid #334155; z-index: 10; font-size: 16px; }
+    .age-chart-table td { padding: 10px 4px; border-bottom: 1px solid #1e293b; text-align: center; } 
+    .age-chart-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+    /* 早見表ジャンプボタン（1行でスッキリ等幅） */
+    .age-jump-row { display: flex; gap: 4px; margin-top: 5px; margin-bottom: 8px; width: 100%; }
+    .age-jump-btn { flex: 1; padding: 10px 0; font-size: 15px; background: #1e293b; color: var(--tool); border: 1px solid #334155; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; }
+    .age-jump-btn:active { background: rgba(255, 159, 243, 0.2); }
   </style>
 </head>
 <body>
@@ -114,10 +136,15 @@
     <a href="tel:117" class="tel-btn" onclick="vibe()">117接続</a>
   </div>
   
-  <div class="tabs">
-    <button id="t-err" class="tab-btn active" onclick="switchTab('err')">誤差</button>
-    <button id="t-calc" class="tab-btn" onclick="switchTab('calc')">計算</button>
-    <button id="t-tool" class="tab-tool" onclick="switchTab('tool')">道具</button>
+  <div class="tabs-wrapper">
+    <div class="tabs-main-left">
+      <button id="t-err" class="tab-btn active" onclick="switchTab('err')">誤差</button>
+      <button id="t-calc" class="tab-btn" onclick="switchTab('calc')">計算</button>
+    </div>
+    <div class="tabs-sub-right">
+      <button id="t-tool" class="tab-sub-btn" onclick="switchTab('tool')">便利ツール</button>
+      <button id="t-chart" class="tab-sub-btn" onclick="switchTab('chart')">年齢早見表</button>
+    </div>
   </div>
 
   <div class="card">
@@ -222,13 +249,13 @@
     </div>
 
     <div id="view-tool" hidden>
-      <div class="tabs" style="margin-bottom: 12px;">
+      <div class="tool-gengo-tabs-container">
         <button id="btn-sw" class="tool-gengo-btn" onclick="setGengo('showa')">昭和</button>
         <button id="btn-h" class="tool-gengo-btn" onclick="setGengo('heisei')">平成</button>
         <button id="btn-r" class="tool-gengo-btn active" onclick="setGengo('reiwa')">令和</button>
         <button id="btn-s" class="tool-gengo-btn" onclick="setGengo('seireki')">西暦</button>
       </div>
-      <div class="card" style="background:rgba(255,159,243,0.05); border:1px solid var(--tool); padding:10px;">
+      <div class="card" style="background:rgba(255,159,243,0.05); border:1px solid var(--tool); padding:10px; margin-bottom: 8px;">
         <div class="tool-input-grid">
           <div class="stepper" style="padding-top:5px; padding-bottom:22px; height: 100%;">
             <button class="step-btn" onmousedown="startSpinGengo(1)" ontouchstart="startSpinGengo(1)">▲</button>
@@ -251,10 +278,37 @@
           </div>
         </div>
       </div>
-      <table class="tool-table">
+      <table class="tool-table" style="margin-bottom: 12px;">
         <thead><tr><th>学校</th><th>入学</th><th>卒業</th></tr></thead>
         <tbody id="edu-body"></tbody>
       </table>
+    </div>
+
+    <div id="view-chart" hidden>
+      <div style="color: var(--clock); font-weight: bold; font-size: 15px; margin-bottom: 6px;">
+        【年齢早見表（2026年現在基準）】
+      </div>
+      
+      <div class="age-jump-row">
+        <button class="age-jump-btn" onclick="jumpToAgeYear('h')">平成</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('s')">昭和</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('00')">'00</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('75')">'75</button>
+        <button class="age-jump-btn" onclick="jumpToAgeYear('50')">'50</button>
+      </div>
+
+      <div class="age-chart-container" id="age-chart-scroll-box">
+        <table class="age-chart-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">年齢</th>
+              <th style="width: 55%;">生まれ年 (西暦/元号)</th>
+              <th style="width: 20%;">干支</th>
+            </tr>
+          </thead>
+          <tbody id="age-chart-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -267,7 +321,7 @@
 
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v=1.4')
+    navigator.serviceWorker.register('sw.js?v=1.5')
       .then(() => console.log('ServiceWorker registered successfully.'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   }
@@ -311,6 +365,7 @@
     render("err"); 
     render("calc");
     applyCalcLockUI();
+    renderAgeChart(); 
 
     window.addEventListener('mouseup', stopSpin);
     window.addEventListener('touchend', stopSpin);
@@ -423,7 +478,8 @@
   }
 
   function toggleDateStepper(tab, checked) {
-    document.getElementById("date-stepper-area-" + tab).style.display = checked ? "grid" : "none";
+    var area = document.getElementById("date-stepper-area-" + tab);
+    if(area) area.style.display = checked ? "grid" : "none";
     if (tab === 'err') {
       document.getElementById("toggle-date-err").checked = checked;
     } else if (tab === 'calc') {
@@ -481,10 +537,23 @@
 
   function switchTab(t){ 
     vibe(); 
-    document.getElementById("view-err").hidden=(t!=="err"); document.getElementById("view-calc").hidden=(t!=="calc"); document.getElementById("view-tool").hidden=(t!=="tool");
-    document.getElementById("common-inputs").hidden=(t==="tool"); document.getElementById("hist-group").hidden=(t==="tool"); 
-    document.getElementById("hist-area-err").hidden=(t!=="err"); document.getElementById("hist-area-calc").hidden=(t!=="calc"); 
-    document.getElementById("t-err").classList.toggle("active",t==="err"); document.getElementById("t-calc").classList.toggle("active",t==="calc"); document.getElementById("t-tool").classList.toggle("active",t==="tool");
+    document.getElementById("view-err").hidden = (t !== "err"); 
+    document.getElementById("view-calc").hidden = (t !== "calc"); 
+    document.getElementById("view-tool").hidden = (t !== "tool");
+    document.getElementById("view-chart").hidden = (t !== "chart");
+
+    var isToolOrChart = (t === "tool" || t === "chart");
+    document.getElementById("common-inputs").hidden = isToolOrChart; 
+    document.getElementById("hist-group").hidden = isToolOrChart; 
+    
+    document.getElementById("hist-area-err").hidden = (t !== "err"); 
+    document.getElementById("hist-area-calc").hidden = (t !== "calc"); 
+
+    document.getElementById("t-err").classList.toggle("active", t === "err"); 
+    document.getElementById("t-calc").classList.toggle("active", t === "calc"); 
+    
+    document.getElementById("t-tool").classList.toggle("tool-active", t === "tool");
+    document.getElementById("t-chart").classList.toggle("chart-active", t === "chart");
 
     if(t === 'calc') {
       var n = new Date(Date.now() + serverOffset);
@@ -531,6 +600,69 @@
   function getGStrCombo(y){ var gStr = ""; if(y>=2019) gStr = "令和" + (y-2018) + "年";
     else if(y>=1989) gStr = "平成" + (y-1988) + "年"; else if(y>=1926) gStr = "昭和" + (y-1925) + "年";
     else gStr = y + "年"; return gStr + " (" + y + ")";
+  }
+
+  /* 【年齢早見表：描画処理】 */
+  function renderAgeChart() {
+    var target = document.getElementById("age-chart-body");
+    if (!target) return;
+    var currentYear = 2026; 
+    var h = "";
+    var etos = ["申","酉","戌","亥","子","丑","寅","卯","辰","巳","午","未"];
+    
+    for (var age = 0; age <= 100; age++) {
+      var birthYear = currentYear - age;
+      var gengoStr = "";
+      
+      if (birthYear >= 2019) { 
+        gengoStr = "令和" + (birthYear === 2019 ? "元" : (birthYear - 2018)) + "年"; 
+      } else if (birthYear >= 1989) { 
+        gengoStr = "平成" + (birthYear === 1989 ? "元" : (birthYear - 1988)) + "年"; 
+      } else if (birthYear >= 1926) { 
+        gengoStr = "昭和" + (birthYear === 1926 ? "元" : (birthYear - 1925)) + "年"; 
+      } else {
+        gengoStr = "西暦表記";
+      }
+
+      var eto = etos[birthYear % 12] + "年";
+
+      h += '<tr id="yr-' + birthYear + '">' +
+           "<td style='font-weight:bold; color:var(--clock); font-size:18px;'>" + age + " 歳</td>" +
+           "<td>" + birthYear + "年 (" + gengoStr + ")</td>" +
+           "<td style='color:var(--text);'>" + eto + "</td>" +
+           "</tr>";
+    }
+    target.innerHTML = h;
+  }
+
+  /* 【年齢早見表精密スクロール】指定の生まれ年を、ヘッダーに隠れないように先頭にピタッとスクロールします */
+  function jumpToAgeYear(key) {
+    vibe();
+    var targetYear = 2026;
+    
+    // ご指定いただいた条件を完璧にマッピングします
+    if (key === 'h' || key === '00') {
+      targetYear = 2000; // 26歳 (平成12年/2000年)
+    } else if (key === 's' || key === '75') {
+      targetYear = 1975; // 51歳 (昭和50年/1975年)
+    } else if (key === '50') {
+      targetYear = 1950; // 76歳 (昭和25年/1950年)
+    }
+
+    var targetEl = document.getElementById("yr-" + targetYear);
+    var container = document.getElementById("age-chart-scroll-box");
+    
+    if (targetEl && container) {
+      // stickyヘッダーの高さを取得（動的対応）
+      var thEl = container.querySelector("th");
+      var headerHeight = thEl ? thEl.offsetHeight : 38;
+      
+      // 対象要素のコンテナ内における正確な相対高さを計算
+      var targetScrollTop = targetEl.offsetTop - headerHeight;
+      
+      // コンテナ内のスクロールを設定
+      container.scrollTop = targetScrollTop;
+    }
   }
 
   function runMeasure(){
