@@ -5,8 +5,8 @@
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
-  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.6">
-  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.6">
+  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.0">
+  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.0">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -248,6 +248,7 @@
       </div>
     </div>
 
+    <!-- 便利ツールタブ -->
     <div id="view-tool" hidden>
       <div class="tool-gengo-tabs-container">
         <button id="btn-sw" class="tool-gengo-btn" onclick="setGengo('showa')">昭和</button>
@@ -268,7 +269,8 @@
               <span class="input-label" style="color:var(--tool); font-size:18px;">生年月日</span>
             </div>
             <div class="tool-row-item">
-              <input type="date" id="birth-date" class="input-field" style="border-color:var(--tool); padding:4px 8px; width: 100%;" onchange="syncFromCalendar(this.value)">
+              <!-- onchangeおよびoninputの両方で月日変更を即座に反映させる -->
+              <input type="date" id="birth-date" class="input-field" style="border-color:var(--tool); padding:4px 8px; width: 100%;" onchange="syncFromCalendar(this.value)" oninput="syncFromCalendar(this.value)">
             </div>
             <div class="tool-row-item" style="background:rgba(255,159,243,0.1); border-radius:8px; border:1px solid var(--tool);">
               <span id="res-age" style="font-size:18px; color:#fff; font-weight:bold;">-- 歳</span>
@@ -284,6 +286,7 @@
       </table>
     </div>
 
+    <!-- 年齢早見表タブ -->
     <div id="view-chart" hidden>
       <div style="color: var(--clock); font-weight: bold; font-size: 15px; margin-bottom: 6px;">
         【年齢早見表（2026年現在基準）】
@@ -301,8 +304,8 @@
         <table class="age-chart-table">
           <thead>
             <tr>
-              <th style="width: 55%;">生まれ年 (西暦/元号)</th>
               <th style="width: 25%;">年齢</th>
+              <th style="width: 55%;">生まれ年 (西暦/元号)</th>
               <th style="width: 20%;">干支</th>
             </tr>
           </thead>
@@ -334,7 +337,6 @@
   var spinTimer = null;
   var spinInterval = null;
   var isCalcLocked = true;
-  var activeTouchId = null;
 
   window.onload = function(){ 
     syncTime();
@@ -581,55 +583,102 @@
     document.getElementById('btn-'+(g==='showa'?'sw':g==='heisei'?'h':g==='reiwa'?'r':'s')).classList.add('active'); 
     document.getElementById('gengo-label').innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[g];
     
-    // 各元号の有効期間（西暦）に masterYear を適切に収める
     if (g === 'reiwa') {
-      if (masterYear < 2019 || masterYear > 2026) {
-        masterYear = 2026; // 令和のデフォルト（最新の令和8年/2026年）
-      }
+      if (masterYear < 2019 || masterYear > 2026) masterYear = 2026;
     } else if (g === 'heisei') {
-      if (masterYear < 1989 || masterYear > 2019) {
-        masterYear = 2000; // 平成のデフォルト（中期の平成12年/2000年）
-      }
+      if (masterYear < 1989 || masterYear > 2019) masterYear = 2000;
     } else if (g === 'showa') {
-      if (masterYear < 1926 || masterYear > 1989) {
-        masterYear = 1975; // 昭和のデフォルト（昭和50年/1975年）
-      }
+      if (masterYear < 1926 || masterYear > 1989) masterYear = 1975;
     } else if (g === 'seireki') {
-      if (masterYear < 1900 || masterYear > 2026) {
-        masterYear = 2026;
-      }
+      if (masterYear < 1900 || masterYear > 2026) masterYear = 2026;
     }
 
-    refreshGengoYearDisplay(); updateToolFromMaster();
-  }
-  function refreshGengoYearDisplay() { var e = document.getElementById("gengo-year"); if(currentGengo==='reiwa') e.value = masterYear - 2018;
-    else if(currentGengo==='heisei') e.value = masterYear - 1988; else if(currentGengo==='showa') e.value = masterYear - 1925; else e.value = masterYear;
-  }
-  function spinGengo(v) { vibe(); masterYear += v; if(masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') setGengo('reiwa');
-    else if(masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') setGengo('heisei');
-    else if(masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') setGengo('showa'); refreshGengoYearDisplay(); updateToolFromMaster();
-  }
-  function syncFromGengoInput() { var y = parseInt(document.getElementById("gengo-year").value); if(isNaN(y)) return; masterYear = (currentGengo==='showa')?y+1925:(currentGengo==='heisei')?y+1988:(currentGengo==='reiwa')?y+2018:y; updateToolFromMaster();
-  }
-  function syncFromCalendar(val) { document.getElementById("birth-date").value = val; var d = new Date(val); masterYear = d.getFullYear(); var g = (masterYear>=2019)?'reiwa':(masterYear>=1989)?'heisei':(masterYear>=1926)?'showa':'seireki';
-    setGengo(g); updateToolFromMaster(); }
-  
-  function updateToolFromMaster() { 
-    var currentB = document.getElementById("birth-date").value || "1975-02-18";
-    var newDateStr = masterYear + currentB.substring(4); document.getElementById("birth-date").value = newDateStr; 
-    var b = new Date(newDateStr); var age = 2026 - b.getFullYear();
-    document.getElementById("res-age").innerText = age + " 歳"; 
-    document.getElementById("res-eto").innerText = ["申","酉","戌","亥","子","丑","寅","卯","辰","巳","午","未"][b.getFullYear()%12] + "年"; 
-    var base = (b.getMonth()<3 || (b.getMonth()===3 && b.getDate()<=1)) ? b.getFullYear() : b.getFullYear()+1; var h = ""; 
-    [{n:"小学校",s:6,e:12},{n:"中学校",s:12,e:15},{n:"高 校",s:15,e:18},{n:"大 学",s:18,e:22}].forEach(x => { h += "<tr><td>"+x.n+"</td><td>"+getGStrCombo(base+x.s)+"</td><td>"+getGStrCombo(base+x.e)+"</td></tr>"; }); 
-    document.getElementById("edu-body").innerHTML = h;
-  }
-  function getGStrCombo(y){ var gStr = ""; if(y>=2019) gStr = "令和" + (y-2018) + "年";
-    else if(y>=1989) gStr = "平成" + (y-1988) + "年"; else if(y>=1926) gStr = "昭和" + (y-1925) + "年";
-    else gStr = y + "年"; return gStr + " (" + y + ")";
+    refreshGengoYearDisplay(); 
+    updateToolFromMaster();
   }
 
-  /* 【年齢早見表：描画処理】 */
+  function refreshGengoYearDisplay() { 
+    var e = document.getElementById("gengo-year"); 
+    if(currentGengo==='reiwa') e.value = masterYear - 2018;
+    else if(currentGengo==='heisei') e.value = masterYear - 1988; 
+    else if(currentGengo==='showa') e.value = masterYear - 1925; 
+    else e.value = masterYear;
+  }
+
+  function spinGengo(v) { 
+    vibe(); 
+    masterYear += v; 
+    if(masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') setGengo('reiwa');
+    else if(masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') setGengo('heisei');
+    else if(masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') setGengo('showa'); 
+    refreshGengoYearDisplay(); 
+    updateToolFromMaster(); 
+  }
+
+  function syncFromGengoInput() { 
+    var y = parseInt(document.getElementById("gengo-year").value); 
+    if(isNaN(y)) return; 
+    masterYear = (currentGengo==='showa')?y+1925:(currentGengo==='heisei')?y+1988:(currentGengo==='reiwa')?y+2018:y; 
+    updateToolFromMaster(); 
+  }
+
+  function syncFromCalendar(val) { 
+    if(!val) return;
+    document.getElementById("birth-date").value = val; 
+    var d = new Date(val); 
+    if(!isNaN(d.getTime())) {
+      masterYear = d.getFullYear(); 
+      var g = (masterYear>=2019)?'reiwa':(masterYear>=1989)?'heisei':(masterYear>=1926)?'showa':'seireki';
+      if(currentGengo !== g) {
+        currentGengo = g;
+        ['sw','h','r','s'].forEach(id => document.getElementById('btn-'+id).classList.remove('active'));
+        document.getElementById('btn-'+(g==='showa'?'sw':g==='heisei'?'h':g==='reiwa'?'r':'s')).classList.add('active');
+        document.getElementById('gengo-label').innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[g];
+      }
+      refreshGengoYearDisplay();
+    }
+    updateToolFromMaster(); 
+  }
+  
+  // 【正確な年齢計算ロジック（月日を考慮）】
+  function updateToolFromMaster() { 
+    var birthInputVal = document.getElementById("birth-date").value;
+    var b = birthInputVal ? new Date(birthInputVal) : new Date(1975, 1, 18);
+    
+    if(!isNaN(b.getTime())) {
+      masterYear = b.getFullYear();
+      refreshGengoYearDisplay();
+    }
+
+    // 現在の日付（2026年10月11日）を基準に正確に計算
+    var today = new Date(2026, 9, 11); 
+    var age = today.getFullYear() - b.getFullYear();
+    var mDiff = today.getMonth() - b.getMonth();
+    if (mDiff < 0 || (mDiff === 0 && today.getDate() < b.getDate())) {
+      age--;
+    }
+    
+    document.getElementById("res-age").innerText = age + " 歳"; 
+    document.getElementById("res-eto").innerText = ["申","酉","戌","亥","子","丑","寅","卯","辰","巳","午","未"][b.getFullYear()%12] + "年"; 
+    
+    var base = (b.getMonth()<3 || (b.getMonth()===3 && b.getDate()<=1)) ? b.getFullYear() : b.getFullYear()+1; 
+    var h = ""; 
+    [{n:"小学校",s:6,e:12},{n:"中学校",s:12,e:15},{n:"高 校",s:15,e:18},{n:"大 学",s:18,e:22}].forEach(x => { 
+      h += "<tr><td>"+x.n+"</td><td>"+getGStrCombo(base+x.s)+"</td><td>"+getGStrCombo(base+x.e)+"</td></tr>"; 
+    }); 
+    document.getElementById("edu-body").innerHTML = h; 
+  }
+
+  function getGStrCombo(y){ 
+    var gStr = ""; 
+    if(y>=2019) gStr = "令和" + (y-2018) + "年"; 
+    else if(y>=1989) gStr = "平成" + (y-1988) + "年"; 
+    else if(y>=1926) gStr = "昭和" + (y-1925) + "年"; 
+    else gStr = y + "年"; 
+    return gStr + " (" + y + ")"; 
+  }
+
+  /* 【年齢早見表：描画処理（0歳〜100歳）】 */
   function renderAgeChart() {
     var target = document.getElementById("age-chart-body");
     if (!target) return;
@@ -654,34 +703,25 @@
       var eto = etos[birthYear % 12] + "年";
 
       h += '<tr id="yr-' + birthYear + '">' +
-           "<td>" + birthYear + "年 (" + gengoStr + ")</td>" +
            "<td style='font-weight:bold; color:var(--clock); font-size:18px;'>" + age + " 歳</td>" +
+           "<td>" + birthYear + "年 (" + gengoStr + ")</td>" +
            "<td style='color:var(--text);'>" + eto + "</td>" +
            "</tr>";
     }
     target.innerHTML = h;
   }
 
-  /* 【年齢早見表精密スクロール】指定の生まれ年を、ヘッダーに隠れないように先頭にピタッとスクロールします */
   function jumpToAgeYear(key) {
     vibe();
     var age = 18;
-    // 平成10年、昭和60年、昭和50年、昭和40年、昭和30年に対応
-    if (key === 'h10') {
-      age = 28; // 平成10年
-    } else if (key === 's60') {
-      age = 41; // 昭和60年
-    } else if (key === 's50') {
-      age = 51; // 昭和50年
-    } else if (key === 's40') {
-      age = 61; // 昭和40年
-    } else if (key === 's30') {
-      age = 71; // 昭和30年
-    }
+    if (key === 'h10') age = 28; // 平成10年
+    else if (key === 's60') age = 41; // 昭和60年
+    else if (key === 's50') age = 51; // 昭和50年
+    else if (key === 's40') age = 61; // 昭和40年
+    else if (key === 's30') age = 71; // 昭和30年
     scrollToAge(age);
   }
 
-  /* 指定された年齢（の行）にスクロールします */
   function scrollToAge(age) {
     var targetYear = 2026 - age;
     var targetEl = document.getElementById("yr-" + targetYear);
@@ -951,20 +991,6 @@
   }
   
   function exportHist(m){ vibe(); var t="【履歴】\n"; hist[m].forEach(it=>t+="\n#"+it.name+"\n誤差:"+it.str+" "+it.st+"\n現在:"+it.v2+"\nカメラ:"+it.v3+"\n---"); var a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); document.body.removeChild(a); alert("コピーしました"); }
-
-  setTimeout(function() {
-    var info = document.getElementById("live-info");
-    if (info && info.innerText === "同期中...") {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) { registration.unregister(); }
-          window.location.reload(true);
-        });
-      } else {
-        window.location.reload(true);
-      }
-    }
-  }, 3000);
 </script>
 </body>
 </html>
