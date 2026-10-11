@@ -441,14 +441,56 @@
     e.value=pad(c); 
   }
 
+// --- 便利ツール専用のスピンドル（▲▼）制御 ---
+  var gengoSpinTimer = null;
+  var gengoSpinInterval = null;
+
   function startSpinGengo(v) {
     if (event && event.cancelable) event.preventDefault();
-    stopSpin();
-    spinGengo(v);
-    spinTimer = setTimeout(function() {
-      spinInterval = setInterval(function() { spinGengo(v); }, 120);
-    }, 450);
+    stopGengoSpin();
+    spinGengo(v); // 押した瞬間に1回確実に変化させる
+    
+    gengoSpinTimer = setTimeout(function() {
+      gengoSpinInterval = setInterval(function() { 
+        spinGengo(v); 
+      }, 120);
+    }, 400);
   }
+
+  function stopGengoSpin() {
+    if (gengoSpinTimer) { clearTimeout(gengoSpinTimer); gengoSpinTimer = null; }
+    if (gengoSpinInterval) { clearInterval(gengoSpinInterval); gengoSpinInterval = null; }
+  }
+
+  function spinGengo(v) { 
+    vibe(); 
+    masterYear += v; 
+    
+    // 各元号の範囲チェックと切り替え
+    if (masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') {
+      currentGengo = 'reiwa';
+    } else if (masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') {
+      currentGengo = 'heisei';
+    } else if (masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') {
+      currentGengo = 'showa';
+    }
+    
+    // UIボタンのアクティブ状態を更新
+    ['sw','h','r','s'].forEach(function(id) {
+      var btn = document.getElementById('btn-' + id);
+      if(btn) btn.classList.remove('active');
+    });
+    var activeId = (currentGengo==='showa'?'sw':currentGengo==='heisei'?'h':currentGengo==='reiwa'?'r':'s');
+    var targetBtn = document.getElementById('btn-' + activeId);
+    if(targetBtn) targetBtn.classList.add('active');
+    
+    var gLabel = document.getElementById('gengo-label');
+    if(gLabel) gLabel.innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[currentGengo];
+
+    refreshGengoYearDisplay(); 
+    updateToolFromMaster(); 
+  }
+
 
   function toggleArea(id){ vibe(); var e = document.getElementById(id); e.style.display = (e.style.display==="block")?"none":"block"; }
   
