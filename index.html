@@ -5,8 +5,8 @@
   <title>ToMO System Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
   
-  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.1">
-  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.1">
+  <link class="sw-version" rel="apple-touch-icon" href="icon.png?v=1.01">
+  <link class="sw-version" rel="icon" type="image/png" href="icon.png?v=1.01">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -40,7 +40,6 @@
     .clock-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--clock); margin-bottom: 8px; }
     .tel-btn { background: #ff4b5c; color: #fff; text-decoration: none; padding: 4px 12px; border-radius: 8px; font-size: 14px; }
     
-    /* 変則タブレイアウト */
     .tabs-wrapper { display: flex; gap: 6px; margin-bottom: 8px; height: 58px; }
     .tabs-main-left { display: flex; flex: 1.8; gap: 6px; }
     .tabs-sub-right { display: flex; flex-direction: column; flex: 1.2; gap: 4px; }
@@ -48,7 +47,6 @@
     .tab-btn { flex: 1; height: 100%; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 20px; border-radius: 8px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; }
     .tab-btn.active { color: var(--primary); background: #2d3748; border-color: var(--primary); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
     
-    /* 右側上下2段のミニタブ専用スタイル */
     .tab-sub-btn { height: 27px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-size: 14px; border-radius: 6px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; }
     .tab-sub-btn.tool-active { color: var(--tool) !important; background: #2d3748 !important; border-color: var(--tool) !important; }
     .tab-sub-btn.chart-active { color: var(--clock) !important; background: #2d3748 !important; border-color: var(--clock) !important; }
@@ -98,7 +96,6 @@
     .label-hist { min-width: 70px; color: var(--text); font-size: 15px; flex: none; font-weight: bold; }
     .apply-btn { background: var(--ok); color: #000; border: none; padding: 4px 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-    /* 元号タブ */
     .tool-gengo-tabs-container { display: flex; width: 100%; gap: 6px; margin-bottom: 12px; }
     .tool-gengo-btn { flex: 1; padding: 10px 0; font-size: 16px !important; border-radius: 8px; border: 1px solid #2d3748; background: #1a202c; color: #4b5563; cursor: pointer; font-weight: bold; text-align: center; }
     .tool-gengo-btn.active { color: var(--tool) !important; border-color: var(--tool) !important; background: #2d3748 !important; }
@@ -114,14 +111,12 @@
     .lock-btn.locked { color: var(--accent); border-color: var(--accent); background: rgba(255,75,92,0.05); }
     .lock-btn.unlocked { color: var(--ok); border-color: var(--ok); background: rgba(0,255,136,0.05); }
 
-    /* 【年齢早見表】コンテナ高さを調整して10行表示 */
-    .age-chart-container { max-height: 445px; overflow-y: auto; border: 1px solid #334155; border-radius: 8px; margin-top: 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; position: relative; }
+    .age-chart-container { max-height: 420px; overflow-y: auto; border: 1px solid #334155; border-radius: 8px; margin-top: 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; position: relative; }
     .age-chart-table { width: 100%; border-collapse: collapse; color: #fff; font-size: 16px; table-layout: fixed; } 
     .age-chart-table th { background: #161e2d; color: var(--tool); position: sticky; top: 0; padding: 10px 6px; font-weight: bold; border-bottom: 2px solid #334155; z-index: 10; font-size: 16px; }
     .age-chart-table td { padding: 10px 4px; border-bottom: 1px solid #1e293b; text-align: center; } 
     .age-chart-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
 
-    /* 早見表ジャンプボタン（1行でスッキリ等幅） */
     .age-jump-row { display: flex; gap: 4px; margin-top: 5px; margin-bottom: 8px; width: 100%; }
     .age-jump-btn { flex: 1; padding: 10px 0; font-size: 15px; background: #1e293b; color: var(--tool); border: 1px solid #334155; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; }
     .age-jump-btn:active { background: rgba(255, 159, 243, 0.2); }
@@ -269,7 +264,6 @@
               <span class="input-label" style="color:var(--tool); font-size:18px;">生年月日</span>
             </div>
             <div class="tool-row-item">
-              <!-- onchangeおよびoninputの両方で月日変更を即座に反映させる -->
               <input type="date" id="birth-date" class="input-field" style="border-color:var(--tool); padding:4px 8px; width: 100%;" onchange="syncFromCalendar(this.value)" oninput="syncFromCalendar(this.value)">
             </div>
             <div class="tool-row-item" style="background:rgba(255,159,243,0.1); border-radius:8px; border:1px solid var(--tool);">
@@ -324,7 +318,7 @@
 
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v=1.6')
+    navigator.serviceWorker.register('sw.js?v=1.11')
       .then(() => console.log('ServiceWorker registered successfully.'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   }
@@ -362,6 +356,7 @@
     }
     
     var initBirth = "1975-02-18";
+    document.getElementById("birth-date").value = initBirth;
     syncFromCalendar(initBirth);
     
     render("err"); 
@@ -441,56 +436,14 @@
     e.value=pad(c); 
   }
 
-// --- 便利ツール専用のスピンドル（▲▼）制御 ---
-  var gengoSpinTimer = null;
-  var gengoSpinInterval = null;
-
   function startSpinGengo(v) {
     if (event && event.cancelable) event.preventDefault();
-    stopGengoSpin();
-    spinGengo(v); // 押した瞬間に1回確実に変化させる
-    
-    gengoSpinTimer = setTimeout(function() {
-      gengoSpinInterval = setInterval(function() { 
-        spinGengo(v); 
-      }, 120);
-    }, 400);
+    stopSpin();
+    spinGengo(v);
+    spinTimer = setTimeout(function() {
+      spinInterval = setInterval(function() { spinGengo(v); }, 120);
+    }, 450);
   }
-
-  function stopGengoSpin() {
-    if (gengoSpinTimer) { clearTimeout(gengoSpinTimer); gengoSpinTimer = null; }
-    if (gengoSpinInterval) { clearInterval(gengoSpinInterval); gengoSpinInterval = null; }
-  }
-
-  function spinGengo(v) { 
-    vibe(); 
-    masterYear += v; 
-    
-    // 各元号の範囲チェックと切り替え
-    if (masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') {
-      currentGengo = 'reiwa';
-    } else if (masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') {
-      currentGengo = 'heisei';
-    } else if (masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') {
-      currentGengo = 'showa';
-    }
-    
-    // UIボタンのアクティブ状態を更新
-    ['sw','h','r','s'].forEach(function(id) {
-      var btn = document.getElementById('btn-' + id);
-      if(btn) btn.classList.remove('active');
-    });
-    var activeId = (currentGengo==='showa'?'sw':currentGengo==='heisei'?'h':currentGengo==='reiwa'?'r':'s');
-    var targetBtn = document.getElementById('btn-' + activeId);
-    if(targetBtn) targetBtn.classList.add('active');
-    
-    var gLabel = document.getElementById('gengo-label');
-    if(gLabel) gLabel.innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[currentGengo];
-
-    refreshGengoYearDisplay(); 
-    updateToolFromMaster(); 
-  }
-
 
   function toggleArea(id){ vibe(); var e = document.getElementById(id); e.style.display = (e.style.display==="block")?"none":"block"; }
   
@@ -625,22 +578,18 @@
     document.getElementById('btn-'+(g==='showa'?'sw':g==='heisei'?'h':g==='reiwa'?'r':'s')).classList.add('active'); 
     document.getElementById('gengo-label').innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[g];
     
-    if (g === 'reiwa') {
-      if (masterYear < 2019 || masterYear > 2026) masterYear = 2026;
-    } else if (g === 'heisei') {
-      if (masterYear < 1989 || masterYear > 2019) masterYear = 2000;
-    } else if (g === 'showa') {
-      if (masterYear < 1926 || masterYear > 1989) masterYear = 1975;
-    } else if (g === 'seireki') {
-      if (masterYear < 1900 || masterYear > 2026) masterYear = 2026;
+    var birthInputVal = document.getElementById("birth-date").value;
+    var bDate = birthInputVal ? new Date(birthInputVal) : new Date(1975, 1, 18);
+    if (!isNaN(bDate.getTime())) {
+      masterYear = bDate.getFullYear();
     }
-
     refreshGengoYearDisplay(); 
     updateToolFromMaster();
   }
 
   function refreshGengoYearDisplay() { 
     var e = document.getElementById("gengo-year"); 
+    if(!e) return;
     if(currentGengo==='reiwa') e.value = masterYear - 2018;
     else if(currentGengo==='heisei') e.value = masterYear - 1988; 
     else if(currentGengo==='showa') e.value = masterYear - 1925; 
@@ -650,10 +599,26 @@
   function spinGengo(v) { 
     vibe(); 
     masterYear += v; 
-    if(masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') setGengo('reiwa');
-    else if(masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') setGengo('heisei');
-    else if(masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') setGengo('showa'); 
+    if(masterYear >= 2019 && currentGengo !== 'reiwa' && currentGengo !== 'seireki') currentGengo = 'reiwa';
+    else if(masterYear >= 1989 && masterYear < 2019 && currentGengo !== 'heisei' && currentGengo !== 'seireki') currentGengo = 'heisei';
+    else if(masterYear >= 1926 && masterYear < 1989 && currentGengo !== 'showa' && currentGengo !== 'seireki') currentGengo = 'showa'; 
+    
+    ['sw','h','r','s'].forEach(id => document.getElementById('btn-'+id).classList.remove('active'));
+    var activeId = (currentGengo==='showa'?'sw':currentGengo==='heisei'?'h':currentGengo==='reiwa'?'r':'s');
+    var btn = document.getElementById('btn-'+activeId);
+    if(btn) btn.classList.add('active');
+    
+    var gLabel = document.getElementById('gengo-label');
+    if(gLabel) gLabel.innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[currentGengo];
+
     refreshGengoYearDisplay(); 
+    
+    var birthInputVal = document.getElementById("birth-date").value || "1975-02-18";
+    var parts = birthInputVal.split("-");
+    var mStr = parts.length > 1 ? parts[1] : "02";
+    var dStr = parts.length > 2 ? parts[2] : "18";
+    document.getElementById("birth-date").value = masterYear + "-" + mStr + "-" + dStr;
+    
     updateToolFromMaster(); 
   }
 
@@ -661,6 +626,13 @@
     var y = parseInt(document.getElementById("gengo-year").value); 
     if(isNaN(y)) return; 
     masterYear = (currentGengo==='showa')?y+1925:(currentGengo==='heisei')?y+1988:(currentGengo==='reiwa')?y+2018:y; 
+    
+    var birthInputVal = document.getElementById("birth-date").value || "1975-02-18";
+    var parts = birthInputVal.split("-");
+    var mStr = parts.length > 1 ? parts[1] : "02";
+    var dStr = parts.length > 2 ? parts[2] : "18";
+    document.getElementById("birth-date").value = masterYear + "-" + mStr + "-" + dStr;
+
     updateToolFromMaster(); 
   }
 
@@ -671,18 +643,15 @@
     if(!isNaN(d.getTime())) {
       masterYear = d.getFullYear(); 
       var g = (masterYear>=2019)?'reiwa':(masterYear>=1989)?'heisei':(masterYear>=1926)?'showa':'seireki';
-      if(currentGengo !== g) {
+      if(currentGengo !== 'seireki') {
         currentGengo = g;
-        ['sw','h','r','s'].forEach(id => document.getElementById('btn-'+id).classList.remove('active'));
-        document.getElementById('btn-'+(g==='showa'?'sw':g==='heisei'?'h':g==='reiwa'?'r':'s')).classList.add('active');
-        document.getElementById('gengo-label').innerText = {showa:'昭和', heisei:'平成', reiwa:'令和', seireki:'西暦'}[g];
       }
-      refreshGengoYearDisplay();
+      setGengo(currentGengo);
+    } else {
+      updateToolFromMaster();
     }
-    updateToolFromMaster(); 
   }
   
-  // 【正確な年齢計算ロジック（月日を考慮）】
   function updateToolFromMaster() { 
     var birthInputVal = document.getElementById("birth-date").value;
     var b = birthInputVal ? new Date(birthInputVal) : new Date(1975, 1, 18);
@@ -692,7 +661,7 @@
       refreshGengoYearDisplay();
     }
 
-    // 現在の日付（2026年10月11日）を基準に正確に計算
+    // 基準日（2026年10月11日）を正確に設定
     var today = new Date(2026, 9, 11); 
     var age = today.getFullYear() - b.getFullYear();
     var mDiff = today.getMonth() - b.getMonth();
@@ -720,7 +689,6 @@
     return gStr + " (" + y + ")"; 
   }
 
-  /* 【年齢早見表：描画処理（0歳〜100歳）】 */
   function renderAgeChart() {
     var target = document.getElementById("age-chart-body");
     if (!target) return;
@@ -756,11 +724,11 @@
   function jumpToAgeYear(key) {
     vibe();
     var age = 18;
-    if (key === 'h10') age = 28; // 平成10年
-    else if (key === 's60') age = 41; // 昭和60年
-    else if (key === 's50') age = 51; // 昭和50年
-    else if (key === 's40') age = 61; // 昭和40年
-    else if (key === 's30') age = 71; // 昭和30年
+    if (key === 'h10') age = 28;
+    else if (key === 's60') age = 41;
+    else if (key === 's50') age = 51;
+    else if (key === 's40') age = 61;
+    else if (key === 's30') age = 71;
     scrollToAge(age);
   }
 
