@@ -1,6 +1,6 @@
 // 【オフライン・ネットワーク安全ガード (5秒タイムアウト制御)】
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=1.15').catch(function() {
+  navigator.serviceWorker.register('sw.js?v=1.00').catch(function() {
     console.log('ServiceWorker 登録スキップ（オフライン動作）');
   });
 }
