@@ -128,18 +128,36 @@ window.onload = function(){
   document.getElementById("birth-date").value = initBirth;
   syncFromCalendar(initBirth);
   
-  // IndexedDBから履歴を読み込んでレンダリング
+// IndexedDBから履歴を読み込んでレンダリング（旧データ自動移行対応）
   initDB(function() {
+    var legacyData = JSON.parse(localStorage.getItem("tomo_v195_hist"));
+
     loadFromDB("err", function(items) {
-      hist.err = items || JSON.parse(localStorage.getItem("tomo_v195_hist_err")) || [];
+      if (items && items.length > 0) {
+        hist.err = items;
+      } else if (legacyData && legacyData.err && legacyData.err.length > 0) {
+        hist.err = legacyData.err;
+        save("err"); // 新しいDBへ自動保存
+      } else {
+        hist.err = JSON.parse(localStorage.getItem("tomo_v195_hist_err")) || [];
+      }
       render("err");
     });
+
     loadFromDB("calc", function(items) {
-      hist.calc = items || JSON.parse(localStorage.getItem("tomo_v195_hist_calc")) || [];
+      if (items && items.length > 0) {
+        hist.calc = items;
+      } else if (legacyData && legacyData.calc && legacyData.calc.length > 0) {
+        hist.calc = legacyData.calc;
+        save("calc"); // 新しいDBへ自動保存
+      } else {
+        hist.calc = JSON.parse(localStorage.getItem("tomo_v195_hist_calc")) || [];
+      }
       render("calc");
     });
   });
 
+  
   applyCalcLockUI();
   renderAgeChart(); 
 
