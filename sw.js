@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-sys-v1.01';
+const CACHE_NAME = 'tomo-sys-v1.00';
 const ASSETS = [
   './',
   './index.html',
